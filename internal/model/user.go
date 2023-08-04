@@ -9,6 +9,6 @@ type User struct {
 	BackgroundImage string `gorm:"background_image"`
 	Signature       string `gorm:"signature"`
 	TotalFavorited  uint   `gorm:"total_favorited"`
-	WordCount       uint   `gorm:"word_count"`
+	WorkCount       uint   `gorm:"work_count"`
 	FavoriteCount   uint   `gorm:"favorite_count"`
 }

@@ -41,14 +41,14 @@ func TestUserRepositoryCreate(t *testing.T) {
 		BackgroundImage: "background_image",
 		Signature:       "signature",
 		TotalFavorited:  1,
-		WordCount:       1,
+		WorkCount:       1,
 		FavoriteCount:   1,
 	}
 
 	mock.ExpectBegin()
 	mock.ExpectExec("INSERT INTO `users`").
 		WithArgs(user.Name, user.FollowCount, user.IsFollow, user.Avatar, user.BackgroundImage,
-			user.Signature, user.TotalFavorited, user.WordCount, user.FavoriteCount).
+			user.Signature, user.TotalFavorited, user.WorkCount, user.FavoriteCount).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
@@ -69,7 +69,7 @@ func TestUserRepositoryUpdate(t *testing.T) {
 		BackgroundImage: "background_image",
 		Signature:       "signature",
 		TotalFavorited:  1,
-		WordCount:       1,
+		WorkCount:       1,
 		FavoriteCount:   1,
 	}
 
@@ -95,14 +95,14 @@ func TestUserRepositoryQueryUserByID(t *testing.T) {
 		BackgroundImage: "background_image",
 		Signature:       "signature",
 		TotalFavorited:  1,
-		WordCount:       1,
+		WorkCount:       1,
 		FavoriteCount:   1,
 	}
 
 	rows := sqlmock.NewRows([]string{"id", "name", "follow_count", "is_follow", "avatar", "background_image",
-		"signature", "total_favorited", "word_count", "favorite_count"}).
+		"signature", "total_favorited", "work_count", "favorite_count"}).
 		AddRow(user.ID, user.Name, user.FollowCount, user.IsFollow, user.Avatar, user.BackgroundImage,
-			user.Signature, user.TotalFavorited, user.WordCount, user.FavoriteCount)
+			user.Signature, user.TotalFavorited, user.WorkCount, user.FavoriteCount)
 	mock.ExpectQuery("SELECT").
 		WithArgs(user.ID).
 		WillReturnRows(rows)
