@@ -1,3 +1,4 @@
 data:
   mysql:
-    user: root:zheshimima@tcp(127.0.0.1:3306)/test?charset=utf8mb4&parseTime=True&loc=Local
+    # 开发前本地记得更改此设置
+    user: root:123456789@tcp(127.0.0.1:3306)/test?charset=utf8mb4&parseTime=True&loc=Local
