@@ -1,14 +1,20 @@
 package model
 
+import "gorm.io/gorm"
+
 type User struct {
-	ID              uint   `gorm:"id, primary_key"`
-	Name            string `gorm:"name"`
-	FollowCount     uint   `gorm:"follow_count"`
-	IsFollow        bool   `gorm:"is_follow"`
-	Avatar          string `gorm:"avatar"`
-	BackgroundImage string `gorm:"background_image"`
-	Signature       string `gorm:"signature"`
-	TotalFavorited  uint   `gorm:"total_favorited"`
-	WorkCount       uint   `gorm:"work_count"`
-	FavoriteCount   uint   `gorm:"favorite_count"`
+	gorm.Model
+	Name            string
+	FollowCount     uint
+	IsFollow        bool
+	Avatar          string
+	BackgroundImage string
+	Signature       string
+	TotalFavorited  uint
+	WorkCount       uint
+	FavoriteCount   uint
+	UserLogin       Login     // user和login一对一
+	Comments        []Comment // 用户和评论一对多
+	Followers       []User    `gorm:"many2many:user_relations;"`   // 用户之间多对多，使用中间表user_relations
+	LikedVideos     []Video   `gorm:"many2many:user_like_videos;"` // 用户和视频多对多，使用中间表user_like_videos
 }
