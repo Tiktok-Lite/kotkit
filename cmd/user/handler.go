@@ -16,6 +16,7 @@ func (s *UserServiceImpl) UserInfo(ctx context.Context, req *user.UserInfoReques
 	userRepo := repository.NewUserRepository(repo)
 	usr, err := userRepo.QueryUserByID(req.UserId)
 
+	// TODO(century): 这里只是测试用，还需完善
 	res := &user.UserInfoResponse{
 		StatusCode: 0,
 		StatusMsg:  nil,
