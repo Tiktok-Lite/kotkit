@@ -8,7 +8,7 @@ import (
 type UserRepository interface {
 	Create(user *model.User) error
 	Update(user *model.User) error
-	QueryUserByID(id uint) (*model.User, error)
+	QueryUserByID(id int64) (*model.User, error)
 }
 
 type userRepository struct {
@@ -38,7 +38,7 @@ func (r *userRepository) Update(user *model.User) error {
 	return nil
 }
 
-func (r *userRepository) QueryUserByID(id uint) (*model.User, error) {
+func (r *userRepository) QueryUserByID(id int64) (*model.User, error) {
 	var user model.User
 	if err := r.db.Where("id = ?", id).First(&user).Error; err != nil {
 		return nil, errors.New("failed to query user")

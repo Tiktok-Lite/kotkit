@@ -1,0 +1,3 @@
+path:
+  info: logs/info.log
+  error: logs/error.log
