@@ -3,15 +3,15 @@ package main
 import (
 	"fmt"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/user/userservice"
+	"github.com/Tiktok-Lite/kotkit/pkg/conf"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
-	"github.com/Tiktok-Lite/kotkit/pkg/viper"
 	"github.com/cloudwego/kitex/server"
 	"log"
 	"net"
 )
 
 var (
-	userConfig  = viper.LoadConfig(constant.DefaultUserConfigPath)
+	userConfig  = conf.LoadConfig(constant.DefaultUserConfigPath)
 	serviceName = userConfig.GetString("server.name")
 	serviceAddr = fmt.Sprintf("%s:%d", userConfig.GetString("server.host"), userConfig.GetInt("server.port"))
 )
