@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	logConfig = conf.LoadConfig(constant.DefaultLogConfigPath)
+	logConfig = conf.LoadConfig(constant.DefaultLogConfigName)
 	infoPath  = logConfig.GetString("path.info")  // INFO/DEBUG/WARN 级别日志的路径
 	errorPath = logConfig.GetString("path.error") // ERROR/FATAL 级别日志的路径
 )

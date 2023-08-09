@@ -1,10 +1,11 @@
 package constant
 
 const (
-	DefaultDBConfigPath   = "config/db.yml"
-	DefaultLogConfigPath  = "config/log.yml"
-	DefaultAPIConfigPath  = "config/api.yml"
-	DefaultUserConfigPath = "config/user.yml"
+	DefaultDBConfigName    = "db"
+	DefaultLogConfigName   = "log"
+	DefaultAPIConfigName   = "api"
+	DefaultUserConfigName  = "user"
+	DefaultVideoConfigName = "video"
 )
 
 const (
