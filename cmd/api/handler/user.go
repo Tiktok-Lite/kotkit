@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"github.com/Tiktok-Lite/kotkit/cmd/api/rpc"
+	"github.com/Tiktok-Lite/kotkit/internal/response"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/user"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/cloudwego/hertz/pkg/app"
@@ -23,17 +24,22 @@ func UserInfo(ctx context.Context, c *app.RequestContext) {
 		Token:  token,
 	}
 	resp, _ := rpc.UserInfo(ctx, req)
-	if resp.StatusCode == -1 {
-		c.JSON(http.StatusOK, user.UserInfoResponse{
-			StatusCode: constant.StatusErrorCode,
-			StatusMsg:  resp.StatusMsg,
-			User:       nil,
+	if resp.StatusCode == constant.StatusErrorCode {
+		c.JSON(http.StatusOK, response.UserInfo{
+			Base: response.Base{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "error occurs when calling userInfo rpc",
+			},
+			User: nil,
 		})
 		return
 	}
-	c.JSON(http.StatusOK, user.UserInfoResponse{
-		StatusCode: constant.StatusOKCode,
-		StatusMsg:  resp.StatusMsg,
-		User:       resp.User,
+
+	c.JSON(http.StatusOK, response.UserInfo{
+		Base: response.Base{
+			StatusCode: constant.StatusOKCode,
+			StatusMsg:  resp.StatusMsg,
+		},
+		User: resp.User,
 	})
 }

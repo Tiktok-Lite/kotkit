@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/user"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/user/userservice"
+	v "github.com/Tiktok-Lite/kotkit/pkg/conf"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
-	v "github.com/Tiktok-Lite/kotkit/pkg/viper"
 	"github.com/cloudwego/kitex/client"
 	"github.com/spf13/viper"
 )

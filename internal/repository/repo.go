@@ -2,9 +2,9 @@ package repository
 
 import (
 	"github.com/Tiktok-Lite/kotkit/internal/model"
+	v "github.com/Tiktok-Lite/kotkit/pkg/conf"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
-	v "github.com/Tiktok-Lite/kotkit/pkg/viper"
-	z "github.com/Tiktok-Lite/kotkit/pkg/zap"
+	z "github.com/Tiktok-Lite/kotkit/pkg/log"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
