@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	userConfig  = conf.LoadConfig(constant.DefaultUserConfigPath)
+	userConfig  = conf.LoadConfig(constant.DefaultUserConfigName)
 	serviceName = userConfig.GetString("server.name")
 	serviceAddr = fmt.Sprintf("%s:%d", userConfig.GetString("server.host"), userConfig.GetInt("server.port"))
 )

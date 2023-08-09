@@ -19,7 +19,7 @@ type Repository struct {
 }
 
 func init() {
-	dbConf := v.LoadConfig(constant.DefaultDBConfigPath)
+	dbConf := v.LoadConfig(constant.DefaultDBConfigName)
 	DB = NewDB(dbConf)
 }
 

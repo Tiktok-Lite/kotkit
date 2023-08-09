@@ -6,6 +6,6 @@ import (
 )
 
 func InitRPC() {
-	userConfig := conf.LoadConfig(constant.DefaultUserConfigPath)
+	userConfig := conf.LoadConfig(constant.DefaultUserConfigName)
 	InitUser(userConfig)
 }

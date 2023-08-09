@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	apiConfig  = v.LoadConfig(constant.DefaultAPIConfigPath)
+	apiConfig  = v.LoadConfig(constant.DefaultAPIConfigName)
 	serverAddr = fmt.Sprintf("%s:%d", apiConfig.GetString("server.host"), apiConfig.GetInt("server.port"))
 )
 

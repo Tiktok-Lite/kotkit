@@ -5,15 +5,12 @@ import (
 	"fmt"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/user"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/user/userservice"
-	v "github.com/Tiktok-Lite/kotkit/pkg/conf"
-	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/cloudwego/kitex/client"
 	"github.com/spf13/viper"
 )
 
 var (
 	userClient userservice.Client
-	userConfig = v.LoadConfig(constant.DefaultUserConfigPath)
 )
 
 func InitUser(config *viper.Viper) {

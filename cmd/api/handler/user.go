@@ -24,22 +24,22 @@ func UserInfo(ctx context.Context, c *app.RequestContext) {
 		Token:  token,
 	}
 	resp, _ := rpc.UserInfo(ctx, req)
-	if resp.StatusCode == constant.StatusErrorCode {
+	if resp.StatusCode == constant.StatusOKCode {
 		c.JSON(http.StatusOK, response.UserInfo{
 			Base: response.Base{
-				StatusCode: constant.StatusErrorCode,
-				StatusMsg:  "error occurs when calling userInfo rpc",
+				StatusCode: constant.StatusOKCode,
+				StatusMsg:  resp.StatusMsg,
 			},
-			User: nil,
+			User: resp.User,
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, response.UserInfo{
 		Base: response.Base{
-			StatusCode: constant.StatusOKCode,
-			StatusMsg:  resp.StatusMsg,
+			StatusCode: constant.StatusErrorCode,
+			StatusMsg:  "用户信息获取失败",
 		},
-		User: resp.User,
+		User: nil,
 	})
 }
