@@ -13,13 +13,13 @@ type UserServiceImpl struct{}
 
 // UserInfo implements the UserServiceImpl interface.
 func (s *UserServiceImpl) UserInfo(ctx context.Context, req *user.UserInfoRequest) (*user.UserInfoResponse, error) {
-	// TODO: Your code here...
 	repo := repository.NewRepository(repository.DB)
 	userRepo := repository.NewUserRepository(repo)
 	usr, err := userRepo.QueryUserByID(req.UserId)
 
 	if err != nil {
 		// TODO: 添加日志
+
 		res := &user.UserInfoResponse{
 			StatusCode: constant.StatusErrorCode,
 			StatusMsg:  "query failed from database",

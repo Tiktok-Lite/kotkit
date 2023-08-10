@@ -8,4 +8,7 @@ import (
 func InitRPC() {
 	userConfig := conf.LoadConfig(constant.DefaultUserConfigName)
 	InitUser(userConfig)
+
+	videoConfig := conf.LoadConfig(constant.DefaultVideoConfigName)
+	InitVideo(videoConfig)
 }

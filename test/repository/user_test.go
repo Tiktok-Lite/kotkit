@@ -105,7 +105,7 @@ func TestUserRepositoryQueryUserByID(t *testing.T) {
 		WithArgs(user.ID).
 		WillReturnRows(rows)
 
-	result, err := userRepo.QueryUserByID(user.ID)
+	result, err := userRepo.QueryUserByID(int64(user.ID))
 	assert.NoError(t, err)
 	assert.Equal(t, user, result)
 	assert.NoError(t, mock.ExpectationsWereMet())
