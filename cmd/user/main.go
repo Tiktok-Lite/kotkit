@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	logger      = log.InitLogger()
+	logger      = log.Logger()
 	userConfig  = conf.LoadConfig(constant.DefaultUserConfigName)
 	serviceName = userConfig.GetString("server.name")
 	serviceAddr = fmt.Sprintf("%s:%d", userConfig.GetString("server.host"), userConfig.GetInt("server.port"))

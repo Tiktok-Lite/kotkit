@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	logger     = log.InitLogger()
+	logger     = log.Logger()
 	apiConfig  = v.LoadConfig(constant.DefaultAPIConfigName)
 	serverAddr = fmt.Sprintf("%s:%d", apiConfig.GetString("server.host"), apiConfig.GetInt("server.port"))
 )
