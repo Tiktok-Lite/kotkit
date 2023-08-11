@@ -148,7 +148,7 @@ func (s *LoginServiceImpl) Login(ctx context.Context, req *login.UserLoginReques
 		// TODO: 添加日志
 		res := &login.UserLoginResponse{
 			StatusCode: constant.StatusErrorCode,
-			StatusMsg:  tools.Md5Encrypt(req.Password) + " vs " + userLogin.Username + "用户名或密码错误",
+			StatusMsg:  "用户名或密码错误",
 		}
 		return res, nil
 	}
