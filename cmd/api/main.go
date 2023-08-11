@@ -28,9 +28,12 @@ func apiRegister(hz *server.Hertz) {
 
 	douyin := hz.Group("/douyin")
 	{
+		
 		user := douyin.Group("/user")
 		{
 			user.GET("/", handler.UserInfo)
+			user.POST("/register/", handler.Register)
+			user.POST("/login/", handler.Login)
 		}
 		douyin.GET("/feed", handler.Feed)
 	}
