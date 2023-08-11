@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/Tiktok-Lite/kotkit/internal/db"
 	"github.com/Tiktok-Lite/kotkit/internal/repository"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/video"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
@@ -15,7 +16,7 @@ type VideoServiceImpl struct{}
 // Feed implements the VideoServiceImpl interface.
 func (s *VideoServiceImpl) Feed(ctx context.Context, req *video.FeedRequest) (*video.FeedResponse, error) {
 	nextTime := time.Now().Unix()
-	repo := repository.NewRepository(repository.DB)
+	repo := repository.NewRepository(db.DB())
 	videoRepo := repository.NewVideoRepository(repo)
 	videos, err := videoRepo.Feed(req.LatestTime, req.Token)
 	// 从倒序的videos中找到最小的nextTime

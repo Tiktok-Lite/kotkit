@@ -6,15 +6,18 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
+	"sync"
 )
 
 var (
+	once      sync.Once
+	logger    *zap.SugaredLogger
 	logConfig = conf.LoadConfig(constant.DefaultLogConfigName)
 	infoPath  = logConfig.GetString("path.info")  // INFO/DEBUG/WARN 级别日志的路径
 	errorPath = logConfig.GetString("path.error") // ERROR/FATAL 级别日志的路径
 )
 
-func InitLogger() *zap.SugaredLogger {
+func initLogger() *zap.SugaredLogger {
 	highPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl >= zap.ErrorLevel
 	})
@@ -57,4 +60,11 @@ func getLogWriter(path string) zapcore.WriteSyncer {
 
 func getErrorLogWriter(errorPath string) zapcore.WriteSyncer {
 	return getLogWriter(errorPath)
+}
+
+func Logger() *zap.SugaredLogger {
+	once.Do(func() {
+		logger = initLogger()
+	})
+	return logger
 }
