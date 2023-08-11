@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/Tiktok-Lite/kotkit/internal/db"
 	"github.com/Tiktok-Lite/kotkit/internal/repository"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/user"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
@@ -13,7 +14,7 @@ type UserServiceImpl struct{}
 
 // UserInfo implements the UserServiceImpl interface.
 func (s *UserServiceImpl) UserInfo(ctx context.Context, req *user.UserInfoRequest) (*user.UserInfoResponse, error) {
-	repo := repository.NewRepository(repository.DB)
+	repo := repository.NewRepository(db.DB())
 	userRepo := repository.NewUserRepository(repo)
 	usr, err := userRepo.QueryUserByID(req.UserId)
 
