@@ -6,21 +6,28 @@ import (
 	"github.com/Tiktok-Lite/kotkit/internal/response"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/video"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
+	"github.com/Tiktok-Lite/kotkit/pkg/log"
 	"github.com/cloudwego/hertz/pkg/app"
 	"net/http"
 	"strconv"
+	"time"
 )
+
+var logger = log.Logger()
 
 func Feed(ctx context.Context, c *app.RequestContext) {
 	latestTime := c.Query("latest_time")
 	token := c.Query("token")
-	t, err := strconv.ParseInt(latestTime, 10, 64)
-	if err != nil {
-		return
+	var latestTime64 int64
+	if latestTime != "" {
+		latestTime64, _ = strconv.ParseInt(latestTime, 10, 64)
+	} else {
+		latestTime64 = time.Now().Unix()
 	}
+	// TODO(century): token后面处理
 
 	req := &video.FeedRequest{
-		LatestTime: &t,
+		LatestTime: &latestTime64,
 		Token:      &token,
 	}
 	resp, err := rpc.Feed(ctx, req)
