@@ -3,12 +3,30 @@ package converter
 import (
 	"github.com/Tiktok-Lite/kotkit/internal/model"
 	genUser "github.com/Tiktok-Lite/kotkit/kitex_gen/user"
+	genVideo "github.com/Tiktok-Lite/kotkit/kitex_gen/video"
 	"github.com/pkg/errors"
 )
 
-// TODO: 将model转换为proto生成后的类型，以简化版handler中的处理
-func ConvertVideoModelListToProto(videoList []*model.Video) {
+func ConvertVideoModelListToProto(videoList []*model.Video) ([]*genVideo.Video, error) {
+	if videoList == nil {
+		return nil, errors.New("video list is nil")
+	}
+	var res []*genVideo.Video
+	for _, video := range videoList {
+		userProto, _ := ConvertUserModelToProto(&video.Author)
+		res = append(res, &genVideo.Video{
+			Id:            int64(video.ID),
+			Author:        userProto,
+			PlayUrl:       video.PlayURL,
+			CoverUrl:      video.CoverURL,
+			FavoriteCount: int64(video.FavoriteCount),
+			CommentCount:  int64(video.CommentCount),
+			IsFavorite:    video.IsFavorite,
+			Title:         video.Title,
+		})
+	}
 
+	return res, nil
 }
 
 func ConvertUserModelToProto(user *model.User) (*genUser.User, error) {
@@ -16,7 +34,7 @@ func ConvertUserModelToProto(user *model.User) (*genUser.User, error) {
 		return nil, errors.New("user is nil")
 	}
 	return &genUser.User{
-		Id:              user.ID,
+		Id:              int64(user.ID),
 		Name:            user.Name,
 		FollowCount:     &user.FollowCount,
 		FollowerCount:   &user.FollowerCount,

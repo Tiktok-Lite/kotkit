@@ -7,6 +7,7 @@ import (
 	"github.com/Tiktok-Lite/kotkit/cmd/api/rpc"
 	v "github.com/Tiktok-Lite/kotkit/pkg/conf"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
+	"github.com/Tiktok-Lite/kotkit/pkg/log"
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/utils"
@@ -14,6 +15,7 @@ import (
 )
 
 var (
+	logger     = log.InitLogger()
 	apiConfig  = v.LoadConfig(constant.DefaultAPIConfigName)
 	serverAddr = fmt.Sprintf("%s:%d", apiConfig.GetString("server.host"), apiConfig.GetInt("server.port"))
 )
@@ -30,6 +32,7 @@ func apiRegister(hz *server.Hertz) {
 		{
 			user.GET("/", handler.UserInfo)
 		}
+		douyin.GET("/feed", handler.Feed)
 	}
 }
 
@@ -40,4 +43,5 @@ func main() {
 	apiRegister(svr)
 
 	svr.Spin()
+	logger.Infof("HTTP service starts successfully at %s", serverAddr)
 }

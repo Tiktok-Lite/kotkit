@@ -1,7 +1,9 @@
 package model
 
+import "gorm.io/gorm"
+
 type User struct {
-	ID              int64 `gorm:"primaryKey"`
+	gorm.Model
 	Name            string
 	FollowCount     int64
 	FollowerCount   int64
