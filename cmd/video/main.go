@@ -11,13 +11,14 @@ import (
 )
 
 var (
-	logger      = log.Logger()
 	userConfig  = conf.LoadConfig(constant.DefaultVideoConfigName)
 	serviceName = userConfig.GetString("server.name")
 	serviceAddr = fmt.Sprintf("%s:%d", userConfig.GetString("server.host"), userConfig.GetInt("server.port"))
 )
 
 func main() {
+	logger := log.Logger()
+
 	addr, err := net.ResolveTCPAddr("tcp", serviceAddr)
 	if err != nil {
 		logger.Errorf("Error occurs when resolving video service address: %v", err)

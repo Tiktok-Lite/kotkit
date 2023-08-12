@@ -16,6 +16,17 @@ message FeedResponse {
   optional int64 next_time = 4; // 本次返回的视频中，发布最早的时间，作为下次请求时的latest_time
 }
 
+message PublishListRequest {
+  int64 user_id = 1; // 用户id
+  string token = 2; // 用户鉴权token
+}
+
+message PublishListResponse {
+  int32 status_code = 1; // 状态码，0-成功，其他值-失败
+  string status_msg = 2; // 返回状态描述
+  repeated Video video_list = 3; // 用户发布的视频列表
+}
+
 message Video {
   int64 id = 1; // 视频唯一标识
   user.User author = 2; // 视频作者信息
@@ -29,4 +40,5 @@ message Video {
 
 service VideoService {
   rpc Feed(FeedRequest) returns (FeedResponse) {}
+  rpc PublishList(PublishListRequest) returns (PublishListResponse) {}
 }

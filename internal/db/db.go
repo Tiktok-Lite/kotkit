@@ -4,6 +4,7 @@ import (
 	"github.com/Tiktok-Lite/kotkit/internal/model"
 	"github.com/Tiktok-Lite/kotkit/pkg/conf"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
+	"github.com/Tiktok-Lite/kotkit/pkg/log"
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -17,6 +18,8 @@ var (
 )
 
 func newDB(config *viper.Viper) *gorm.DB {
+	logger := log.Logger()
+
 	connInfo := config.GetString("data.mysql.user")
 	var err error
 	_db, err := gorm.Open(mysql.New(mysql.Config{
@@ -37,6 +40,7 @@ func newDB(config *viper.Viper) *gorm.DB {
 		panic(err)
 	}
 
+	logger.Info("DB service start successfully!")
 	return _db
 }
 

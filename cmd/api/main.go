@@ -32,7 +32,11 @@ func apiRegister(hz *server.Hertz) {
 		{
 			user.GET("/", handler.UserInfo)
 		}
-		douyin.GET("/feed", handler.Feed)
+		publish := douyin.Group("/publish")
+		{
+			publish.GET("/list/", handler.PublishList)
+		}
+		douyin.GET("/feed/", handler.Feed)
 	}
 }
 
