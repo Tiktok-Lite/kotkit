@@ -6,6 +6,7 @@ const (
 	DefaultAPIConfigName   = "api"
 	DefaultUserConfigName  = "user"
 	DefaultVideoConfigName = "video"
+	DefaultLoginConfigName = "login"
 )
 
 const (

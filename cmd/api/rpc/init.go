@@ -11,4 +11,7 @@ func InitRPC() {
 
 	videoConfig := conf.LoadConfig(constant.DefaultVideoConfigName)
 	InitVideo(videoConfig)
+
+	loginConfig := conf.LoadConfig(constant.DefaultLoginConfigName)
+	InitLogin(loginConfig)
 }
