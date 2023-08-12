@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/Tiktok-Lite/kotkit/internal/db"
 	login "github.com/Tiktok-Lite/kotkit/kitex_gen/login"
 	"github.com/Tiktok-Lite/kotkit/internal/repository"
 	"github.com/Tiktok-Lite/kotkit/internal/model"
@@ -14,7 +15,7 @@ type LoginServiceImpl struct{}
 
 // Register implements the UserServiceImpl interface.
 func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegisterRequest) (resp *login.UserRegisterResponse, err error) {
-	repo := repository.NewRepository(repository.DB)
+	repo := repository.NewRepository(db.DB())
 	loginRepo := repository.NewLoginRepository(repo)
 	userRepo := repository.NewUserRepository(repo)
 	
@@ -27,7 +28,8 @@ func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegister
 			StatusMsg:  "注册失败：服务器查询错误",
 		}
 		return res, nil
-	} else if usr != nil {
+	} 
+	if usr != nil {
 		// TODO: 添加日志
 		res := &login.UserRegisterResponse{
 			StatusCode: constant.StatusErrorCode,
@@ -123,7 +125,7 @@ func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegister
 
 // Login implements the UserServiceImpl interface.
 func (s *LoginServiceImpl) Login(ctx context.Context, req *login.UserLoginRequest) (resp *login.UserLoginResponse, err error) {
-	repo := repository.NewRepository(repository.DB)
+	repo := repository.NewRepository(db.DB())
 	loginRepo := repository.NewLoginRepository(repo)
 	// 根据用户名获取密码
 	userLogin,err := loginRepo.QueryLoginByName(req.Username)
@@ -134,7 +136,8 @@ func (s *LoginServiceImpl) Login(ctx context.Context, req *login.UserLoginReques
 			StatusMsg:  "登录失败：服务器内部错误",
 		}
 		return res, nil
-	} else if userLogin == nil {
+	} 
+	if userLogin == nil {
 		res := &login.UserLoginResponse{
 			StatusCode: constant.StatusErrorCode,
 			StatusMsg:  "用户名不存在",

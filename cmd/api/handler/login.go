@@ -90,7 +90,7 @@ func Login(ctx context.Context, c *app.RequestContext) {
 			Base: response.Base{
 			StatusCode: constant.StatusOKCode,
 			StatusMsg:  resp.StatusMsg,
-		},
+			},
 		})
 		return
 	}
