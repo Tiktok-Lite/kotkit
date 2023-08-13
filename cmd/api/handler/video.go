@@ -52,3 +52,46 @@ func Feed(ctx context.Context, c *app.RequestContext) {
 		})
 	}
 }
+
+func PublishList(ctx context.Context, c *app.RequestContext) {
+	logger := log.Logger()
+
+	userID := c.Query("user_id")
+	token := c.Query("token")
+	id, err := strconv.ParseInt(userID, 10, 64)
+	if err != nil {
+		logger.Errorf("Failed to parse user_id. %v", err)
+		c.JSON(http.StatusBadRequest, response.PublishList{
+			Base: response.Base{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "用户ID非法!",
+			},
+			VideoList: nil,
+		})
+	}
+
+	req := &video.PublishListRequest{
+		UserId: id,
+		Token:  token,
+	}
+	resp, err := rpc.PublishList(ctx, req)
+	if err != nil {
+		logger.Errorf("RPC call failed due to %v", err)
+		c.JSON(http.StatusInternalServerError, response.PublishList{
+			Base: response.Base{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "由于内部错误，获取视频失败",
+			},
+			VideoList: nil,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, response.PublishList{
+		Base: response.Base{
+			StatusCode: constant.StatusOKCode,
+			StatusMsg:  resp.StatusMsg,
+		},
+		VideoList: resp.VideoList,
+	})
+}
