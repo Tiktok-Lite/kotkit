@@ -28,3 +28,7 @@ func InitVideo(config *viper.Viper) {
 func Feed(ctx context.Context, req *video.FeedRequest) (*video.FeedResponse, error) {
 	return videoClient.Feed(ctx, req)
 }
+
+func PublishList(ctx context.Context, req *video.PublishListRequest) (*video.PublishListResponse, error) {
+	return videoClient.PublishList(ctx, req)
+}
