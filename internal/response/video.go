@@ -12,3 +12,7 @@ type PublishList struct {
 	Base
 	VideoList []*video.Video `json:"video_list`
 }
+
+type PublishAction struct {
+	Base
+}

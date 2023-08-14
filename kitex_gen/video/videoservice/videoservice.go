@@ -22,8 +22,9 @@ func NewServiceInfo() *kitex.ServiceInfo {
 	serviceName := "VideoService"
 	handlerType := (*video.VideoService)(nil)
 	methods := map[string]kitex.MethodInfo{
-		"Feed":        kitex.NewMethodInfo(feedHandler, newFeedArgs, newFeedResult, false),
-		"PublishList": kitex.NewMethodInfo(publishListHandler, newPublishListArgs, newPublishListResult, false),
+		"Feed":          kitex.NewMethodInfo(feedHandler, newFeedArgs, newFeedResult, false),
+		"PublishList":   kitex.NewMethodInfo(publishListHandler, newPublishListArgs, newPublishListResult, false),
+		"PublishAction": kitex.NewMethodInfo(publishActionHandler, newPublishActionArgs, newPublishActionResult, false),
 	}
 	extra := map[string]interface{}{
 		"PackageName": "video",
@@ -345,6 +346,159 @@ func (p *PublishListResult) GetResult() interface{} {
 	return p.Success
 }
 
+func publishActionHandler(ctx context.Context, handler interface{}, arg, result interface{}) error {
+	switch s := arg.(type) {
+	case *streaming.Args:
+		st := s.Stream
+		req := new(video.PublishActionRequest)
+		if err := st.RecvMsg(req); err != nil {
+			return err
+		}
+		resp, err := handler.(video.VideoService).PublishAction(ctx, req)
+		if err != nil {
+			return err
+		}
+		if err := st.SendMsg(resp); err != nil {
+			return err
+		}
+	case *PublishActionArgs:
+		success, err := handler.(video.VideoService).PublishAction(ctx, s.Req)
+		if err != nil {
+			return err
+		}
+		realResult := result.(*PublishActionResult)
+		realResult.Success = success
+	}
+	return nil
+}
+func newPublishActionArgs() interface{} {
+	return &PublishActionArgs{}
+}
+
+func newPublishActionResult() interface{} {
+	return &PublishActionResult{}
+}
+
+type PublishActionArgs struct {
+	Req *video.PublishActionRequest
+}
+
+func (p *PublishActionArgs) FastRead(buf []byte, _type int8, number int32) (n int, err error) {
+	if !p.IsSetReq() {
+		p.Req = new(video.PublishActionRequest)
+	}
+	return p.Req.FastRead(buf, _type, number)
+}
+
+func (p *PublishActionArgs) FastWrite(buf []byte) (n int) {
+	if !p.IsSetReq() {
+		return 0
+	}
+	return p.Req.FastWrite(buf)
+}
+
+func (p *PublishActionArgs) Size() (n int) {
+	if !p.IsSetReq() {
+		return 0
+	}
+	return p.Req.Size()
+}
+
+func (p *PublishActionArgs) Marshal(out []byte) ([]byte, error) {
+	if !p.IsSetReq() {
+		return out, fmt.Errorf("No req in PublishActionArgs")
+	}
+	return proto.Marshal(p.Req)
+}
+
+func (p *PublishActionArgs) Unmarshal(in []byte) error {
+	msg := new(video.PublishActionRequest)
+	if err := proto.Unmarshal(in, msg); err != nil {
+		return err
+	}
+	p.Req = msg
+	return nil
+}
+
+var PublishActionArgs_Req_DEFAULT *video.PublishActionRequest
+
+func (p *PublishActionArgs) GetReq() *video.PublishActionRequest {
+	if !p.IsSetReq() {
+		return PublishActionArgs_Req_DEFAULT
+	}
+	return p.Req
+}
+
+func (p *PublishActionArgs) IsSetReq() bool {
+	return p.Req != nil
+}
+
+func (p *PublishActionArgs) GetFirstArgument() interface{} {
+	return p.Req
+}
+
+type PublishActionResult struct {
+	Success *video.PublicActionResponse
+}
+
+var PublishActionResult_Success_DEFAULT *video.PublicActionResponse
+
+func (p *PublishActionResult) FastRead(buf []byte, _type int8, number int32) (n int, err error) {
+	if !p.IsSetSuccess() {
+		p.Success = new(video.PublicActionResponse)
+	}
+	return p.Success.FastRead(buf, _type, number)
+}
+
+func (p *PublishActionResult) FastWrite(buf []byte) (n int) {
+	if !p.IsSetSuccess() {
+		return 0
+	}
+	return p.Success.FastWrite(buf)
+}
+
+func (p *PublishActionResult) Size() (n int) {
+	if !p.IsSetSuccess() {
+		return 0
+	}
+	return p.Success.Size()
+}
+
+func (p *PublishActionResult) Marshal(out []byte) ([]byte, error) {
+	if !p.IsSetSuccess() {
+		return out, fmt.Errorf("No req in PublishActionResult")
+	}
+	return proto.Marshal(p.Success)
+}
+
+func (p *PublishActionResult) Unmarshal(in []byte) error {
+	msg := new(video.PublicActionResponse)
+	if err := proto.Unmarshal(in, msg); err != nil {
+		return err
+	}
+	p.Success = msg
+	return nil
+}
+
+func (p *PublishActionResult) GetSuccess() *video.PublicActionResponse {
+	if !p.IsSetSuccess() {
+		return PublishActionResult_Success_DEFAULT
+	}
+	return p.Success
+}
+
+func (p *PublishActionResult) SetSuccess(x interface{}) {
+	p.Success = x.(*video.PublicActionResponse)
+}
+
+func (p *PublishActionResult) IsSetSuccess() bool {
+	return p.Success != nil
+}
+
+func (p *PublishActionResult) GetResult() interface{} {
+	return p.Success
+}
+
 type kClient struct {
 	c client.Client
 }
@@ -370,6 +524,16 @@ func (p *kClient) PublishList(ctx context.Context, Req *video.PublishListRequest
 	_args.Req = Req
 	var _result PublishListResult
 	if err = p.c.Call(ctx, "PublishList", &_args, &_result); err != nil {
+		return
+	}
+	return _result.GetSuccess(), nil
+}
+
+func (p *kClient) PublishAction(ctx context.Context, Req *video.PublishActionRequest) (r *video.PublicActionResponse, err error) {
+	var _args PublishActionArgs
+	_args.Req = Req
+	var _result PublishActionResult
+	if err = p.c.Call(ctx, "PublishAction", &_args, &_result); err != nil {
 		return
 	}
 	return _result.GetSuccess(), nil

@@ -8,6 +8,7 @@ import (
 type VideoRepository interface {
 	Feed(latestTime *int64, token *string) ([]*model.Video, error)
 	QueryVideoListByUserID(userID int64, token string) ([]*model.Video, error)
+	CreateVideo(video *model.Video) error
 }
 
 type videoRepository struct {
@@ -49,4 +50,12 @@ func (v *videoRepository) QueryVideoListByUserID(userID int64, token string) ([]
 	}
 
 	return videos, nil
+}
+
+func (v *videoRepository) CreateVideo(video *model.Video) error {
+	if err := v.db.Debug().Create(video).Error; err != nil {
+		return err
+	}
+	return nil
+
 }
