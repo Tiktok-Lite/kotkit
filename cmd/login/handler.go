@@ -2,12 +2,14 @@ package main
 
 import (
 	"context"
+	"time"
 	"github.com/Tiktok-Lite/kotkit/internal/db"
 	login "github.com/Tiktok-Lite/kotkit/kitex_gen/login"
 	"github.com/Tiktok-Lite/kotkit/internal/repository"
 	"github.com/Tiktok-Lite/kotkit/internal/model"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/tools"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
+	"github.com/Tiktok-Lite/kotkit/pkg/helper/jwt"
 )
 
 
@@ -94,7 +96,6 @@ func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegister
 
 	if err := userRepo.UpdateByUsername(req.Username,newUser); err != nil {
 		// TODO: 添加日志
-		// 日志：TODO
 		res := &login.UserRegisterResponse{
 			StatusCode: constant.StatusErrorCode,
 			StatusMsg:  "注册失败: 服务器更新user错误",
@@ -104,6 +105,18 @@ func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegister
 
 
 	//生成token TODO
+	claims := jwt.CustomClaims{Id: int64(loginData.UserID)}
+	claims.ExpiresAt = time.Now().Add(time.Minute * 5).Unix()
+	token, err := Jwt.CreateToken(claims)
+	if err != nil {
+		// TODO: 添加日志
+		res := &login.UserRegisterResponse{
+			StatusCode: constant.StatusErrorCode,
+			StatusMsg:  "服务器错误:token 创建失败",
+		}
+		return res, nil
+	}
+
 	
 	userLogin,err := loginRepo.QueryLoginByName(req.Username)
 	if err != nil {
@@ -114,11 +127,13 @@ func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegister
 		}
 		return res, nil
 	}
+
+
 	res := &login.UserRegisterResponse{
 		StatusCode: constant.StatusOKCode,
 		StatusMsg:  "success",
 		UserId:     int64(userLogin.UserID),
-		Token:      "todo",
+		Token:      token,
 	}
 	return res, nil
 }
@@ -156,8 +171,20 @@ func (s *LoginServiceImpl) Login(ctx context.Context, req *login.UserLoginReques
 		return res, nil
 	}
 
-	// 密码认证通过,获取用户id并生成token 
-	// TODO
+	// 生成token 
+	claims := jwt.CustomClaims{
+		Id: int64(userLogin.UserID),
+	}
+	claims.ExpiresAt = time.Now().Add(time.Hour * 24).Unix()
+	token, err := Jwt.CreateToken(claims)
+	if err != nil {
+		// 日志：TODO
+		res := &login.UserLoginResponse{
+			StatusCode: constant.StatusErrorCode,
+			StatusMsg:  "服务器错误:token 创建失败",
+		}
+		return res, nil
+	}
 	
 
 	// 返回结果
@@ -165,7 +192,7 @@ func (s *LoginServiceImpl) Login(ctx context.Context, req *login.UserLoginReques
 		StatusCode: constant.StatusOKCode,
 		StatusMsg:  "success",
 		UserId:     int64(userLogin.UserID),
-		Token:      "todo",
+		Token:      token,
 	}
 	return res, nil
 }
