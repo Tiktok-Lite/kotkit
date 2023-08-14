@@ -2,3 +2,5 @@ server:
   name: "login service"
   host: 127.0.0.1
   port: 8083
+JWT:
+  signingKey: "signingKey"

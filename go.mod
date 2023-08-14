@@ -7,6 +7,7 @@ require (
 	github.com/cloudwego/fastpb v0.0.4
 	github.com/cloudwego/hertz v0.6.7
 	github.com/cloudwego/kitex v0.6.2
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.3
@@ -32,7 +33,6 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
-	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/pprof v0.0.0-20220608213341-c488b8fa1db3 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
