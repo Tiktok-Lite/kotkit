@@ -5,7 +5,6 @@ import (
 	"github.com/Tiktok-Lite/kotkit/cmd/api/rpc"
 	"github.com/Tiktok-Lite/kotkit/internal/response"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/video"
-	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/Tiktok-Lite/kotkit/pkg/log"
 	"github.com/cloudwego/hertz/pkg/app"
 	"net/http"
@@ -13,16 +12,22 @@ import (
 	"time"
 )
 
-var logger = log.Logger()
-
 func Feed(ctx context.Context, c *app.RequestContext) {
+	logger := log.Logger()
+
 	latestTime := c.Query("latest_time")
 	token := c.Query("token")
 	var latestTime64 int64
+	var parseErr error
 	if latestTime != "" {
-		latestTime64, _ = strconv.ParseInt(latestTime, 10, 64)
+		latestTime64, parseErr = strconv.ParseInt(latestTime, 10, 64)
 	} else {
 		latestTime64 = time.Now().Unix()
+	}
+
+	if parseErr != nil {
+		logger.Errorf("Failed to parse latest_time. %v", parseErr)
+		ResponseError(c, http.StatusBadRequest, response.PackFeedError("请检查latest_time是否合法"))
 	}
 	// TODO(century): token后面处理
 
@@ -32,25 +37,11 @@ func Feed(ctx context.Context, c *app.RequestContext) {
 	}
 	resp, err := rpc.Feed(ctx, req)
 	if err != nil {
-		c.JSON(http.StatusOK, response.Feed{
-			Base: response.Base{
-				StatusCode: constant.StatusErrorCode,
-				StatusMsg:  "RPC调用出现问题",
-			},
-			NextTime:  nil,
-			VideoList: nil,
-		})
+		logger.Errorf("RPC call failed due to %v", err)
+		ResponseError(c, http.StatusInternalServerError, response.PackFeedError("由于内部错误，获取视频失败"))
 	}
-	if resp.StatusCode == constant.StatusOKCode {
-		c.JSON(http.StatusOK, response.Feed{
-			Base: response.Base{
-				StatusCode: constant.StatusOKCode,
-				StatusMsg:  "成功获取feed流",
-			},
-			NextTime:  resp.NextTime,
-			VideoList: resp.VideoList,
-		})
-	}
+
+	ResponseSuccess(c, response.PackFeedSuccess(resp.NextTime, resp.VideoList, resp.StatusMsg))
 }
 
 func PublishList(ctx context.Context, c *app.RequestContext) {
@@ -61,13 +52,8 @@ func PublishList(ctx context.Context, c *app.RequestContext) {
 	id, err := strconv.ParseInt(userID, 10, 64)
 	if err != nil {
 		logger.Errorf("Failed to parse user_id. %v", err)
-		c.JSON(http.StatusBadRequest, response.PublishList{
-			Base: response.Base{
-				StatusCode: constant.StatusErrorCode,
-				StatusMsg:  "用户ID非法!",
-			},
-			VideoList: nil,
-		})
+		ResponseError(c, http.StatusBadRequest, response.PackPublishListError("请检查user_id是否合法"))
+		return
 	}
 
 	req := &video.PublishListRequest{
@@ -77,21 +63,9 @@ func PublishList(ctx context.Context, c *app.RequestContext) {
 	resp, err := rpc.PublishList(ctx, req)
 	if err != nil {
 		logger.Errorf("RPC call failed due to %v", err)
-		c.JSON(http.StatusInternalServerError, response.PublishList{
-			Base: response.Base{
-				StatusCode: constant.StatusErrorCode,
-				StatusMsg:  "由于内部错误，获取视频失败",
-			},
-			VideoList: nil,
-		})
+		ResponseError(c, http.StatusInternalServerError, response.PackPublishListError("由于内部错误，获取视频失败"))
 		return
 	}
 
-	c.JSON(http.StatusOK, response.PublishList{
-		Base: response.Base{
-			StatusCode: constant.StatusOKCode,
-			StatusMsg:  resp.StatusMsg,
-		},
-		VideoList: resp.VideoList,
-	})
+	ResponseSuccess(c, response.PackPublishListSuccess(resp.VideoList, resp.StatusMsg))
 }
