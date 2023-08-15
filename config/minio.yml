@@ -1,8 +1,8 @@
 configure:
   endpoint: "127.0.0.1:9000"
   accessKeyID: "kotkit"
-  secretAccessKey: "test"
-  useSSL: true
+  secretAccessKey: "kotkit-test"
+  useSSL: false
 
 name:
   VideoBucket: "video"

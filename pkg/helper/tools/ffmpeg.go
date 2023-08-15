@@ -46,7 +46,7 @@ func GetScreenshotBuffer(playURL string, frameNum int) (*bytes.Buffer, error) {
 
 	buf := bytes.NewBuffer(nil)
 	err := ffmpeg.Input(playURL).
-		Filter("select", ffmpeg.Args{fmt.Sprintf("gte(n, %d)", frameNum)}).
+		Filter("select", ffmpeg.Args{fmt.Sprintf("gte(n,%d)", frameNum)}).
 		Output("pipe:", ffmpeg.KwArgs{"vframes": 1, "format": "image2", "vcodec": "mjpeg"}).
 		WithOutput(buf, os.Stdout).
 		Run()

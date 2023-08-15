@@ -7,10 +7,12 @@ import (
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/tools"
 	"github.com/Tiktok-Lite/kotkit/pkg/log"
+	"github.com/bytedance/gopkg/util/logger"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/pkg/errors"
 	"sync"
+	"time"
 )
 
 var (
@@ -30,9 +32,26 @@ type MinioClient struct {
 	*minio.Client
 }
 
+func init() {
+	Minio()
+	ctx := context.Background()
+	if err := minioClient.MakeBucket(ctx, videoBucketName, minio.MakeBucketOptions{}); err != nil {
+		if exist, _ := minioClient.BucketExists(ctx, videoBucketName); exist {
+			logger.Infof("bucket %s already exists", videoBucketName)
+		}
+	}
+	if err := minioClient.MakeBucket(ctx, coverBucketName, minio.MakeBucketOptions{}); err != nil {
+		if exist, _ := minioClient.BucketExists(ctx, coverBucketName); exist {
+			logger.Infof("bucket %s already exists", coverBucketName)
+		}
+	}
+}
+
 func newMinioClient() (*minio.Client, error) {
 	logger := log.Logger()
 
+	logger.Info("creating minio client...")
+	defer logger.Info("minio client created")
 	minioClient_, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
 		Secure: useSSL,
@@ -48,10 +67,43 @@ func newMinioClient() (*minio.Client, error) {
 
 func Minio() *minio.Client {
 	once.Do(func() {
-		minioClient, _ = newMinioClient()
+		var err error
+		minioClient, err = newMinioClient()
+		if err != nil {
+			log.Logger().Errorf("minio client init error: %v", err)
+			minioClient = nil
+		}
 	})
 
 	return minioClient
+}
+
+func CreateBucket(bucketName string) error {
+	logger := log.Logger()
+
+	if len(bucketName) == 0 {
+		logger.Errorf("create bucket error: bucketName is empty")
+		return errors.New("bucketName is empty")
+	}
+
+	ctx := context.Background()
+	exists, err := Minio().BucketExists(ctx, bucketName)
+	if err != nil {
+		logger.Errorf("check bucket existence error: %v", err)
+		return err
+	}
+
+	if !exists {
+		if err := Minio().MakeBucket(ctx, bucketName, minio.MakeBucketOptions{}); err != nil {
+			logger.Errorf("create bucket error: %v", err)
+			return err
+		}
+	} else {
+		logger.Infof("bucket %v already exists", bucketName)
+	}
+
+	logger.Infof("create bucket %v success", bucketName)
+	return nil
 }
 
 func PublishVideo(data []byte, videoTitle, coverTitle string) error {
@@ -82,7 +134,7 @@ func UploadVideo(data []byte, videoTitle string) (string, error) {
 	videoBytes := bytes.NewReader(data)
 	// upload video to minio
 	uploadInfo, err := Minio().PutObject(context.Background(), videoBucketName, videoTitle, videoBytes, int64(len(data)), minio.PutObjectOptions{
-		ContentType: "video/mp4",
+		ContentType: "application/mp4",
 	})
 	if err != nil {
 		logger.Errorf("upload video to minio error: %v", err)
@@ -102,8 +154,9 @@ func UploadVideo(data []byte, videoTitle string) (string, error) {
 func GetObjectURL(bucketName, titleName string) (string, error) {
 	logger := log.Logger()
 
+	expiry := expiryTime * time.Minute
 	// get object url
-	objectURL, err := Minio().PresignedGetObject(context.Background(), bucketName, titleName, expiryTime, nil)
+	objectURL, err := Minio().PresignedGetObject(context.Background(), bucketName, titleName, expiry, nil)
 	if err != nil {
 		logger.Errorf("get object url error: %v", err)
 		return "", err
