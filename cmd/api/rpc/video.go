@@ -32,3 +32,7 @@ func Feed(ctx context.Context, req *video.FeedRequest) (*video.FeedResponse, err
 func PublishList(ctx context.Context, req *video.PublishListRequest) (*video.PublishListResponse, error) {
 	return videoClient.PublishList(ctx, req)
 }
+
+func PublishAction(ctx context.Context, req *video.PublishActionRequest) (*video.PublicActionResponse, error) {
+	return videoClient.PublishAction(ctx, req)
+}

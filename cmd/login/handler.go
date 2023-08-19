@@ -2,17 +2,16 @@ package main
 
 import (
 	"context"
-	"time"
 	"github.com/Tiktok-Lite/kotkit/internal/db"
-	login "github.com/Tiktok-Lite/kotkit/kitex_gen/login"
-	"github.com/Tiktok-Lite/kotkit/internal/repository"
 	"github.com/Tiktok-Lite/kotkit/internal/model"
-	"github.com/Tiktok-Lite/kotkit/pkg/helper/tools"
+	"github.com/Tiktok-Lite/kotkit/internal/repository"
+	login "github.com/Tiktok-Lite/kotkit/kitex_gen/login"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/jwt"
+	"github.com/Tiktok-Lite/kotkit/pkg/helper/tools"
 	"github.com/Tiktok-Lite/kotkit/pkg/log"
+	"time"
 )
-
 
 type LoginServiceImpl struct{}
 
@@ -32,7 +31,7 @@ func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegister
 			StatusMsg:  "注册失败：服务器查询错误",
 		}
 		return res, nil
-	} 
+	}
 	if usr != nil {
 		logger.Errorf("用户已存在")
 		res := &login.UserRegisterResponse{
@@ -55,7 +54,7 @@ func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegister
 		WorkCount:       0,
 		FavoriteCount:   0,
 	}
-	
+
 	if err := userRepo.Create(newUser); err != nil {
 		logger.Errorf("新建user错误")
 		res := &login.UserRegisterResponse{
@@ -64,13 +63,13 @@ func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegister
 		}
 		return res, nil
 	}
-	
+
 	loginData := &model.Login{
 		Username: req.Username,
 		Password: tools.Md5Encrypt(req.Password),
 		UserID:   newUser.ID,
 	}
-	
+
 	if err := loginRepo.CreateLogin(loginData); err != nil {
 		logger.Errorf("新建login错误")
 		res := &login.UserRegisterResponse{
@@ -94,7 +93,7 @@ func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegister
 		UserLogin:       *loginData,
 	}
 
-	if err := userRepo.UpdateByUsername(req.Username,newUser); err != nil {
+	if err := userRepo.UpdateByUsername(req.Username, newUser); err != nil {
 		logger.Errorf("更新user错误")
 		res := &login.UserRegisterResponse{
 			StatusCode: constant.StatusErrorCode,
@@ -103,9 +102,9 @@ func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegister
 		return res, nil
 	}
 
-	//生成token 
+	//生成token
 	claims := jwt.CustomClaims{Id: int64(loginData.UserID)}
-	claims.ExpiresAt = time.Now().Add(time.Minute * 5).Unix()
+	claims.ExpiresAt = time.Now().Add(time.Minute * expiryTime).Unix()
 	token, err := Jwt.CreateToken(claims)
 	if err != nil {
 		logger.Errorf("token 创建失败")
@@ -115,8 +114,8 @@ func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegister
 		}
 		return res, nil
 	}
-	
-	userLogin,err := loginRepo.QueryLoginByName(req.Username)
+
+	userLogin, err := loginRepo.QueryLoginByName(req.Username)
 	if err != nil {
 		logger.Errorf(err.Error())
 		res := &login.UserRegisterResponse{
@@ -140,7 +139,7 @@ func (s *LoginServiceImpl) Login(ctx context.Context, req *login.UserLoginReques
 	repo := repository.NewRepository(db.DB())
 	loginRepo := repository.NewLoginRepository(repo)
 	// 根据用户名获取密码
-	userLogin,err := loginRepo.QueryLoginByName(req.Username)
+	userLogin, err := loginRepo.QueryLoginByName(req.Username)
 	if err != nil {
 		logger.Errorf(err.Error())
 		res := &login.UserLoginResponse{
@@ -148,7 +147,7 @@ func (s *LoginServiceImpl) Login(ctx context.Context, req *login.UserLoginReques
 			StatusMsg:  "登录失败：服务器内部错误",
 		}
 		return res, nil
-	} 
+	}
 	if userLogin == nil {
 		logger.Errorf("用户名不存在")
 		res := &login.UserLoginResponse{
@@ -168,11 +167,11 @@ func (s *LoginServiceImpl) Login(ctx context.Context, req *login.UserLoginReques
 		return res, nil
 	}
 
-	// 生成token 
+	// 生成token
 	claims := jwt.CustomClaims{
 		Id: int64(userLogin.UserID),
 	}
-	claims.ExpiresAt = time.Now().Add(time.Hour * 24).Unix()
+	claims.ExpiresAt = time.Now().Add(time.Hour * expiryTime).Unix()
 	token, err := Jwt.CreateToken(claims)
 	if err != nil {
 		logger.Errorf("token创建失败")
@@ -182,7 +181,6 @@ func (s *LoginServiceImpl) Login(ctx context.Context, req *login.UserLoginReques
 		}
 		return res, nil
 	}
-	
 
 	// 返回结果
 	res := &login.UserLoginResponse{

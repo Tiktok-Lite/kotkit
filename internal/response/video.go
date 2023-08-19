@@ -46,3 +46,7 @@ func PackPublishListSuccess(videoList []*video.Video, msg string) PublishList {
 		VideoList: videoList,
 	}
 }
+
+type PublishAction struct {
+	Base
+}
