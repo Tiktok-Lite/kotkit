@@ -24,14 +24,14 @@ func Feed(ctx context.Context, c *app.RequestContext) {
 	if latestTime != "" {
 		latestTime64, parseErr = strconv.ParseInt(latestTime, 10, 64)
 	} else {
-		latestTime64 = time.Now().Unix()
+		latestTime64 = time.Now().UnixMilli()
 	}
 
 	if parseErr != nil {
 		logger.Errorf("Failed to parse latest_time. %v", parseErr)
 		ResponseError(c, http.StatusBadRequest, response.PackFeedError("请检查latest_time是否合法"))
+		return
 	}
-	// TODO(century): token后面处理
 
 	req := &video.FeedRequest{
 		LatestTime: &latestTime64,

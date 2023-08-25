@@ -24,8 +24,8 @@ var (
 	secretAccessKey = minioConf.GetString("configure.secretAccessKey")
 	useSSL          = minioConf.GetBool("configure.useSSL")
 	expiryTime      = minioConf.GetDuration("expiryTime")
-	videoBucketName = minioConf.GetString("name.VideoBucket")
-	coverBucketName = minioConf.GetString("name.CoverBucket")
+	VideoBucketName = minioConf.GetString("name.VideoBucket")
+	CoverBucketName = minioConf.GetString("name.CoverBucket")
 )
 
 type MinioClient struct {
@@ -35,14 +35,14 @@ type MinioClient struct {
 func init() {
 	Minio()
 	ctx := context.Background()
-	if err := minioClient.MakeBucket(ctx, videoBucketName, minio.MakeBucketOptions{}); err != nil {
-		if exist, _ := minioClient.BucketExists(ctx, videoBucketName); exist {
-			logger.Infof("bucket %s already exists", videoBucketName)
+	if err := minioClient.MakeBucket(ctx, VideoBucketName, minio.MakeBucketOptions{}); err != nil {
+		if exist, _ := minioClient.BucketExists(ctx, VideoBucketName); exist {
+			logger.Infof("bucket %s already exists", VideoBucketName)
 		}
 	}
-	if err := minioClient.MakeBucket(ctx, coverBucketName, minio.MakeBucketOptions{}); err != nil {
-		if exist, _ := minioClient.BucketExists(ctx, coverBucketName); exist {
-			logger.Infof("bucket %s already exists", coverBucketName)
+	if err := minioClient.MakeBucket(ctx, CoverBucketName, minio.MakeBucketOptions{}); err != nil {
+		if exist, _ := minioClient.BucketExists(ctx, CoverBucketName); exist {
+			logger.Infof("bucket %s already exists", CoverBucketName)
 		}
 	}
 }
@@ -133,7 +133,7 @@ func UploadVideo(data []byte, videoTitle string) (string, error) {
 
 	videoBytes := bytes.NewReader(data)
 	// upload video to minio
-	uploadInfo, err := Minio().PutObject(context.Background(), videoBucketName, videoTitle, videoBytes, int64(len(data)), minio.PutObjectOptions{
+	uploadInfo, err := Minio().PutObject(context.Background(), VideoBucketName, videoTitle, videoBytes, int64(len(data)), minio.PutObjectOptions{
 		ContentType: "application/mp4",
 	})
 	if err != nil {
@@ -142,7 +142,7 @@ func UploadVideo(data []byte, videoTitle string) (string, error) {
 	}
 	logger.Infof("upload video to minio success: %v", uploadInfo)
 
-	playURL, err := GetObjectURL(videoBucketName, videoTitle)
+	playURL, err := GetObjectURL(VideoBucketName, videoTitle)
 	if err != nil {
 		logger.Errorf("get video url error: %v", err)
 		return "", err
@@ -178,7 +178,7 @@ func UploadCover(playURL, coverTitle string) error {
 	}
 	contentType := "image/jpg"
 
-	uploadInfo, err := Minio().PutObject(context.Background(), coverBucketName, coverTitle, buf, int64(buf.Len()), minio.PutObjectOptions{
+	uploadInfo, err := Minio().PutObject(context.Background(), CoverBucketName, coverTitle, buf, int64(buf.Len()), minio.PutObjectOptions{
 		ContentType: contentType,
 	})
 	if err != nil {
@@ -186,7 +186,7 @@ func UploadCover(playURL, coverTitle string) error {
 		return err
 	}
 
-	coverURL, err := GetObjectURL(coverBucketName, coverTitle)
+	coverURL, err := GetObjectURL(CoverBucketName, coverTitle)
 	if err != nil {
 		logger.Errorf("Failed to get cover url from OSS. %v", err)
 		return err
