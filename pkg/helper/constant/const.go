@@ -1,12 +1,13 @@
 package constant
 
 const (
-	DefaultDBConfigName    = "db"
-	DefaultLogConfigName   = "log"
-	DefaultAPIConfigName   = "api"
-	DefaultUserConfigName  = "user"
-	DefaultVideoConfigName = "video"
-	DefaultLoginConfigName = "login"
+	DefaultDBConfigName       = "db"
+	DefaultLogConfigName      = "log"
+	DefaultAPIConfigName      = "api"
+	DefaultUserConfigName     = "user"
+	DefaultVideoConfigName    = "video"
+	DefaultLoginConfigName    = "login"
+	DefaultRelationConfigName = "relation"
 )
 
 const (

@@ -28,7 +28,7 @@ func apiRegister(hz *server.Hertz) {
 
 	douyin := hz.Group("/douyin")
 	{
-		
+
 		user := douyin.Group("/user")
 		{
 			user.GET("/", handler.UserInfo)
@@ -38,6 +38,16 @@ func apiRegister(hz *server.Hertz) {
 		publish := douyin.Group("/publish")
 		{
 			publish.GET("/list/", handler.PublishList)
+		}
+		relation := douyin.Group("/relation")
+		{
+			// 粉丝列表
+			relation.GET("/follower/list/", handler.FollowerList)
+			// 关注列表
+			relation.GET("/follow/list/", handler.FollowList)
+			// 朋友列表
+			relation.GET("/friend/list/", handler.FriendList)
+			relation.POST("/action/", handler.RelationAction)
 		}
 		douyin.GET("/feed/", handler.Feed)
 	}
