@@ -13,11 +13,12 @@ import (
 
 var (
 	logger      = log.Logger()
-	userConfig  = conf.LoadConfig(constant.DefaultLoginConfigName)
-	serviceName = userConfig.GetString("server.name")
-	signingKey  = userConfig.GetString("JWT.signingKey")	
-	serviceAddr = fmt.Sprintf("%s:%d", userConfig.GetString("server.host"), userConfig.GetInt("server.port"))
-	Jwt *jwt.JWT
+	loginConfig = conf.LoadConfig(constant.DefaultLoginConfigName)
+	serviceName = loginConfig.GetString("server.name")
+	signingKey  = loginConfig.GetString("JWT.signingKey")
+	serviceAddr = fmt.Sprintf("%s:%d", loginConfig.GetString("server.host"), loginConfig.GetInt("server.port"))
+	expiryTime  = loginConfig.GetDuration("JWT.expiryTime")
+	Jwt         *jwt.JWT
 )
 
 func init() {
@@ -42,4 +43,3 @@ func main() {
 	}
 	logger.Infof("Login service server start successfully at %s", serviceAddr)
 }
-

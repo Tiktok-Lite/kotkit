@@ -13,6 +13,10 @@ type PublishList struct {
 	VideoList []*video.Video `json:"video_list"`
 }
 
+type PublishAction struct {
+	Base
+}
+
 func PackFeedError(errorMsg string) Feed {
 	base := PackBaseError(errorMsg)
 	return Feed{
@@ -44,5 +48,19 @@ func PackPublishListSuccess(videoList []*video.Video, msg string) PublishList {
 	return PublishList{
 		Base:      base,
 		VideoList: videoList,
+	}
+}
+
+func PackPublishActionError(errorMsg string) PublishAction {
+	base := PackBaseError(errorMsg)
+	return PublishAction{
+		Base: base,
+	}
+}
+
+func PackPublishActionSuccess(msg string) PublishAction {
+	base := PackBaseSuccess(msg)
+	return PublishAction{
+		Base: base,
 	}
 }

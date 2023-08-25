@@ -38,6 +38,7 @@ func apiRegister(hz *server.Hertz) {
 		publish := douyin.Group("/publish")
 		{
 			publish.GET("/list/", handler.PublishList)
+			publish.POST("/action/", handler.PublishAction)
 		}
 		relation := douyin.Group("/relation")
 		{

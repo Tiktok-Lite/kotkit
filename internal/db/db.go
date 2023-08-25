@@ -32,11 +32,13 @@ func newDB(config *viper.Viper) *gorm.DB {
 	}), &gorm.Config{})
 
 	if err != nil {
+		logger.Errorf("DB service failed to start due to %v", err)
 		panic(err)
 	}
 
 	// 自动创建和修改表结构
 	if err = _db.AutoMigrate(&model.User{}, &model.Login{}, &model.Comment{}, &model.Message{}, &model.Video{}); err != nil {
+		logger.Errorf("DB failed to auto migrate due to %v", err)
 		panic(err)
 	}
 

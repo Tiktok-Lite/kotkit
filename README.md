@@ -1,6 +1,12 @@
 # kotkit
 玩转tiktok
 
+# 前置条件
+1. 安装go
+2. 安装mysql，本地3306端口
+3. 安装minio，本地9000端口（需要本地设置secretAccessKey）
+4. 安装ffmpeg
+
 # 如何运行
 1. 在cmd/api目录下启动http服务
 ```shell
