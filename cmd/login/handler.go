@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/Tiktok-Lite/kotkit/internal/db"
 	"github.com/Tiktok-Lite/kotkit/internal/model"
 	"github.com/Tiktok-Lite/kotkit/internal/repository"
@@ -10,6 +11,7 @@ import (
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/jwt"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/tools"
 	"github.com/Tiktok-Lite/kotkit/pkg/log"
+	"math/rand"
 	"time"
 )
 
@@ -47,9 +49,9 @@ func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegister
 		FollowCount:     0,
 		FollowerCount:   0,
 		IsFollow:        false,
-		Avatar:          "",
-		BackgroundImage: "",
-		Signature:       "",
+		Avatar:          fmt.Sprintf("default_%d.jpeg", rand.Intn(3)+1),
+		BackgroundImage: fmt.Sprintf("bg_img_%d.jpeg", rand.Intn(3)+1),
+		Signature:       fmt.Sprintf("我的名字是%s", req.Username),
 		TotalFavorited:  0,
 		WorkCount:       0,
 		FavoriteCount:   0,
@@ -84,9 +86,9 @@ func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegister
 		FollowCount:     0,
 		FollowerCount:   0,
 		IsFollow:        false,
-		Avatar:          "",
-		BackgroundImage: "",
-		Signature:       "",
+		Avatar:          fmt.Sprintf("default_%d.jpeg", rand.Intn(3)+1),
+		BackgroundImage: fmt.Sprintf("bg_img_%d.jpeg", rand.Intn(3)+1),
+		Signature:       fmt.Sprintf("我的名字是%s", req.Username),
 		TotalFavorited:  0,
 		WorkCount:       0,
 		FavoriteCount:   0,

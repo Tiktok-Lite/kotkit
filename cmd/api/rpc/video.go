@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/video"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/video/videoservice"
+	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/cloudwego/kitex/client"
 	"github.com/spf13/viper"
 )
@@ -26,13 +27,35 @@ func InitVideo(config *viper.Viper) {
 }
 
 func Feed(ctx context.Context, req *video.FeedRequest) (*video.FeedResponse, error) {
-	return videoClient.Feed(ctx, req)
+	resp, err := videoClient.Feed(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode == constant.StatusErrorCode {
+		return resp, fmt.Errorf(resp.StatusMsg)
+	}
+	return resp, nil
 }
 
 func PublishList(ctx context.Context, req *video.PublishListRequest) (*video.PublishListResponse, error) {
-	return videoClient.PublishList(ctx, req)
+	resp, err := videoClient.PublishList(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode == constant.StatusErrorCode {
+		return resp, fmt.Errorf(resp.StatusMsg)
+	}
+	return resp, nil
 }
 
 func PublishAction(ctx context.Context, req *video.PublishActionRequest) (*video.PublicActionResponse, error) {
-	return videoClient.PublishAction(ctx, req)
+	resp, err := videoClient.PublishAction(ctx, req)
+	if err != nil {
+		return resp, err
+	}
+	if resp.StatusCode == constant.StatusErrorCode {
+		return resp, fmt.Errorf(resp.StatusMsg)
+	}
+
+	return resp, nil
 }

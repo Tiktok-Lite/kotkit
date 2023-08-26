@@ -24,14 +24,14 @@ func Feed(ctx context.Context, c *app.RequestContext) {
 	if latestTime != "" {
 		latestTime64, parseErr = strconv.ParseInt(latestTime, 10, 64)
 	} else {
-		latestTime64 = time.Now().Unix()
+		latestTime64 = time.Now().UnixMilli()
 	}
 
 	if parseErr != nil {
 		logger.Errorf("Failed to parse latest_time. %v", parseErr)
 		ResponseError(c, http.StatusBadRequest, response.PackFeedError("请检查latest_time是否合法"))
+		return
 	}
-	// TODO(century): token后面处理
 
 	req := &video.FeedRequest{
 		LatestTime: &latestTime64,
@@ -55,6 +55,12 @@ func PublishList(ctx context.Context, c *app.RequestContext) {
 	if err != nil {
 		logger.Errorf("Failed to parse user_id. %v", err)
 		ResponseError(c, http.StatusBadRequest, response.PackPublishListError("请检查user_id是否合法"))
+		return
+	}
+
+	if token == "" {
+		logger.Info("Input token is empty")
+		ResponseError(c, http.StatusBadRequest, response.PackPublishListError("token不能为空"))
 		return
 	}
 
@@ -112,7 +118,7 @@ func PublishAction(ctx context.Context, c *app.RequestContext) {
 	res, err := rpc.PublishAction(ctx, req)
 	if err != nil {
 		logger.Errorf("RPC call failed due to %v", err)
-		ResponseError(c, http.StatusInternalServerError, response.PackPublishActionError("由于内部错误，发布视频失败"))
+		ResponseError(c, http.StatusInternalServerError, response.PackPublishActionError(res.StatusMsg))
 		return
 	}
 

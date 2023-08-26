@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/user"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/user/userservice"
+	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/cloudwego/kitex/client"
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
@@ -26,5 +28,13 @@ func InitUser(config *viper.Viper) {
 }
 
 func UserInfo(ctx context.Context, req *user.UserInfoRequest) (*user.UserInfoResponse, error) {
-	return userClient.UserInfo(ctx, req)
+	resp, err := userClient.UserInfo(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode == constant.StatusErrorCode {
+		return resp, errors.New(resp.StatusMsg)
+	}
+
+	return resp, nil
 }
