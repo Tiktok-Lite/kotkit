@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"github.com/Tiktok-Lite/kotkit/internal/db"
-	"github.com/Tiktok-Lite/kotkit/internal/repository"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/user"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/converter"
@@ -15,9 +14,6 @@ type UserServiceImpl struct{}
 
 // UserInfo implements the UserServiceImpl interface.
 func (s *UserServiceImpl) UserInfo(ctx context.Context, req *user.UserInfoRequest) (*user.UserInfoResponse, error) {
-	repo := repository.NewRepository(db.DB())
-	userRepo := repository.NewUserRepository(repo)
-
 	token := req.Token
 	claims, err := Jwt.ParseToken(token)
 	if err != nil {
@@ -30,7 +26,7 @@ func (s *UserServiceImpl) UserInfo(ctx context.Context, req *user.UserInfoReques
 		return res, nil
 	}
 
-	usr, err := userRepo.QueryUserByID(req.UserId)
+	usr, err := db.QueryUserByID(req.UserId)
 
 	if err == nil && usr == nil {
 		logger.Errorf("No user exists due to user_id: %v", req.UserId)
@@ -50,7 +46,7 @@ func (s *UserServiceImpl) UserInfo(ctx context.Context, req *user.UserInfoReques
 		return res, nil
 	}
 
-	isRelated, err := userRepo.QueryUserByRelation(req.UserId, claims.Id)
+	isRelated, err := db.QueryUserByRelation(req.UserId, claims.Id)
 	if err != nil {
 		logger.Errorf("Failed to query from database due to %v", err)
 		res := &user.UserInfoResponse{

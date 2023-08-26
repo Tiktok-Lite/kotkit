@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/Tiktok-Lite/kotkit/internal/db"
 	"github.com/Tiktok-Lite/kotkit/internal/model"
-	"github.com/Tiktok-Lite/kotkit/internal/repository"
 	login "github.com/Tiktok-Lite/kotkit/kitex_gen/login"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/jwt"
@@ -19,13 +18,10 @@ type LoginServiceImpl struct{}
 
 // Register implements the UserServiceImpl interface.
 func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegisterRequest) (resp *login.UserRegisterResponse, err error) {
-	repo := repository.NewRepository(db.DB())
-	loginRepo := repository.NewLoginRepository(repo)
-	userRepo := repository.NewUserRepository(repo)
 	logger := log.Logger()
 
 	// 检查用户名是否冲突
-	usr, err := userRepo.QueryUserByName(req.Username)
+	usr, err := db.QueryUserByName(req.Username)
 	if err != nil {
 		logger.Errorf(err.Error())
 		res := &login.UserRegisterResponse{
@@ -57,7 +53,7 @@ func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegister
 		FavoriteCount:   0,
 	}
 
-	if err := userRepo.Create(newUser); err != nil {
+	if err := db.Create(newUser); err != nil {
 		logger.Errorf("新建user错误")
 		res := &login.UserRegisterResponse{
 			StatusCode: constant.StatusErrorCode,
@@ -72,7 +68,7 @@ func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegister
 		UserID:   newUser.ID,
 	}
 
-	if err := loginRepo.CreateLogin(loginData); err != nil {
+	if err := db.CreateLogin(loginData); err != nil {
 		logger.Errorf("新建login错误")
 		res := &login.UserRegisterResponse{
 			StatusCode: constant.StatusErrorCode,
@@ -95,7 +91,7 @@ func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegister
 		UserLogin:       *loginData,
 	}
 
-	if err := userRepo.UpdateByUsername(req.Username, newUser); err != nil {
+	if err := db.UpdateByUsername(req.Username, newUser); err != nil {
 		logger.Errorf("更新user错误")
 		res := &login.UserRegisterResponse{
 			StatusCode: constant.StatusErrorCode,
@@ -117,7 +113,7 @@ func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegister
 		return res, nil
 	}
 
-	userLogin, err := loginRepo.QueryLoginByName(req.Username)
+	userLogin, err := db.QueryLoginByName(req.Username)
 	if err != nil {
 		logger.Errorf(err.Error())
 		res := &login.UserRegisterResponse{
@@ -138,10 +134,8 @@ func (s *LoginServiceImpl) Register(ctx context.Context, req *login.UserRegister
 
 // Login implements the UserServiceImpl interface.
 func (s *LoginServiceImpl) Login(ctx context.Context, req *login.UserLoginRequest) (resp *login.UserLoginResponse, err error) {
-	repo := repository.NewRepository(db.DB())
-	loginRepo := repository.NewLoginRepository(repo)
 	// 根据用户名获取密码
-	userLogin, err := loginRepo.QueryLoginByName(req.Username)
+	userLogin, err := db.QueryLoginByName(req.Username)
 	if err != nil {
 		logger.Errorf(err.Error())
 		res := &login.UserLoginResponse{
