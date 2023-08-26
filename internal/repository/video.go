@@ -3,12 +3,14 @@ package repository
 import (
 	"github.com/Tiktok-Lite/kotkit/internal/db"
 	"github.com/Tiktok-Lite/kotkit/internal/model"
+	"github.com/pkg/errors"
+	"gorm.io/gorm"
 	"time"
 )
 
 type VideoRepository interface {
 	Feed(latestTime *int64) ([]*model.Video, error)
-	QueryVideoListByUserID(userID int64, token string) ([]*model.Video, error)
+	QueryVideoListByUserID(userID int64) ([]*model.Video, error)
 	CreateVideo(video *model.Video) error
 	QueryVideoLikeRelation(vid, uid int64) (bool, error)
 }
@@ -25,8 +27,8 @@ func NewVideoRepository(r *Repository) VideoRepository {
 
 func (v *videoRepository) Feed(latestTime *int64) ([]*model.Video, error) {
 	// 不指定latest time则根据当前时间指定
-	curr := time.Now().UnixMilli()
-	if latestTime == nil {
+	if latestTime == nil || *latestTime == 0 {
+		curr := time.Now().UnixMilli()
 		latestTime = &curr
 	}
 	var videos []*model.Video
@@ -34,7 +36,7 @@ func (v *videoRepository) Feed(latestTime *int64) ([]*model.Video, error) {
 	// 注意：Preload内的参数是字段名，而不是表名......
 	if err := v.db.Debug().
 		Preload("Author").Where("created_at < ?", time.UnixMilli(*latestTime)).Order("created_at desc").
-		Find(&videos).Error; err != nil {
+		Limit(30).Find(&videos).Error; err != nil {
 		v.logger.Errorf("failed to query videos from databse: %v", err)
 		return nil, err
 	}
@@ -42,10 +44,13 @@ func (v *videoRepository) Feed(latestTime *int64) ([]*model.Video, error) {
 	return videos, nil
 }
 
-func (v *videoRepository) QueryVideoListByUserID(userID int64, token string) ([]*model.Video, error) {
+func (v *videoRepository) QueryVideoListByUserID(userID int64) ([]*model.Video, error) {
 	var videos []*model.Video
 
-	if err := v.db.Debug().Preload("Author").Where("user_id = ?", userID).Find(&videos).Error; err != nil {
+	if err := v.db.Debug().Preload("Author").Where("user_id = ?", userID).Find(&videos).Error; errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	} else if err != nil {
+		v.logger.Errorf("failed to query videos from databse: %v", err)
 		return nil, err
 	}
 

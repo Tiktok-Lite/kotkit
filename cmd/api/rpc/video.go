@@ -38,13 +38,20 @@ func Feed(ctx context.Context, req *video.FeedRequest) (*video.FeedResponse, err
 }
 
 func PublishList(ctx context.Context, req *video.PublishListRequest) (*video.PublishListResponse, error) {
-	return videoClient.PublishList(ctx, req)
+	resp, err := videoClient.PublishList(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode == constant.StatusErrorCode {
+		return resp, fmt.Errorf(resp.StatusMsg)
+	}
+	return resp, nil
 }
 
 func PublishAction(ctx context.Context, req *video.PublishActionRequest) (*video.PublicActionResponse, error) {
 	resp, err := videoClient.PublishAction(ctx, req)
 	if err != nil {
-		return nil, err
+		return resp, err
 	}
 	if resp.StatusCode == constant.StatusErrorCode {
 		return resp, fmt.Errorf(resp.StatusMsg)

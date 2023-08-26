@@ -58,6 +58,12 @@ func PublishList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	if token == "" {
+		logger.Info("Input token is empty")
+		ResponseError(c, http.StatusBadRequest, response.PackPublishListError("token不能为空"))
+		return
+	}
+
 	req := &video.PublishListRequest{
 		UserId: id,
 		Token:  token,
@@ -112,7 +118,7 @@ func PublishAction(ctx context.Context, c *app.RequestContext) {
 	res, err := rpc.PublishAction(ctx, req)
 	if err != nil {
 		logger.Errorf("RPC call failed due to %v", err)
-		ResponseError(c, http.StatusInternalServerError, response.PackPublishActionError("由于内部错误，发布视频失败"))
+		ResponseError(c, http.StatusInternalServerError, response.PackPublishActionError(res.StatusMsg))
 		return
 	}
 

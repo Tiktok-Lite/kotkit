@@ -16,16 +16,18 @@ import (
 )
 
 var (
-	once            sync.Once
-	minioClient     *minio.Client
-	minioConf       = conf.LoadConfig(constant.DefaultMinioConfigName)
-	endpoint        = minioConf.GetString("configure.endpoint")
-	accessKeyID     = minioConf.GetString("configure.accessKeyID")
-	secretAccessKey = minioConf.GetString("configure.secretAccessKey")
-	useSSL          = minioConf.GetBool("configure.useSSL")
-	expiryTime      = minioConf.GetDuration("expiryTime")
-	VideoBucketName = minioConf.GetString("name.VideoBucket")
-	CoverBucketName = minioConf.GetString("name.CoverBucket")
+	once                      sync.Once
+	minioClient               *minio.Client
+	minioConf                 = conf.LoadConfig(constant.DefaultMinioConfigName)
+	endpoint                  = minioConf.GetString("configure.endpoint")
+	accessKeyID               = minioConf.GetString("configure.accessKeyID")
+	secretAccessKey           = minioConf.GetString("configure.secretAccessKey")
+	useSSL                    = minioConf.GetBool("configure.useSSL")
+	expiryTime                = minioConf.GetDuration("expiryTime")
+	VideoBucketName           = minioConf.GetString("name.VideoBucket")
+	CoverBucketName           = minioConf.GetString("name.CoverBucket")
+	AvatarBucketName          = minioConf.GetString("name.AvatarBucket")
+	BackgroundImageBucketName = minioConf.GetString("name.BackgroundImageBucket")
 )
 
 type MinioClient struct {

@@ -60,7 +60,7 @@ func (s *VideoServiceImpl) Feed(ctx context.Context, req *video.FeedRequest) (*v
 		nextTime = videos[len(videos)-1].UpdatedAt.Unix()
 	}
 
-	// 处理videos中的点赞关系
+	// 处理videos中的点赞关系和minio中的视频url和封面url
 	for _, v := range videos {
 		liked, err := videoRepo.QueryVideoLikeRelation(int64(v.ID), uid)
 		if err != nil {
@@ -74,6 +74,32 @@ func (s *VideoServiceImpl) Feed(ctx context.Context, req *video.FeedRequest) (*v
 			return res, nil
 		}
 		v.IsFavorite = liked
+
+		playUrl, err := oss.GetObjectURL(oss.VideoBucketName, v.PlayURL)
+		if err != nil {
+			logger.Errorf("Error occurs when getting video url from minio. %v", err)
+			res := &video.FeedResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "内部minio数据库错误，获取视频失败",
+				VideoList:  nil,
+				NextTime:   nil,
+			}
+			return res, nil
+		}
+		v.PlayURL = playUrl
+
+		coverUrl, err := oss.GetObjectURL(oss.CoverBucketName, v.CoverURL)
+		if err != nil {
+			logger.Errorf("Error occurs when getting cover url from minio. %v", err)
+			res := &video.FeedResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "内部minio数据库错误，获取视频失败",
+				VideoList:  nil,
+				NextTime:   nil,
+			}
+			return res, nil
+		}
+		v.CoverURL = coverUrl
 	}
 
 	videoListProto, err := converter.ConvertVideoModelListToProto(videos)
@@ -100,15 +126,85 @@ func (s *VideoServiceImpl) Feed(ctx context.Context, req *video.FeedRequest) (*v
 func (s *VideoServiceImpl) PublishList(ctx context.Context, req *video.PublishListRequest) (*video.PublishListResponse, error) {
 	logger := log.Logger()
 
-	videos, err := videoRepo.QueryVideoListByUserID(req.UserId, req.Token)
+	claims, err := Jwt.ParseToken(req.Token)
+	if err != nil {
+		logger.Errorf("Error occurs when parsing token. %v", err)
+		res := &video.PublishListResponse{
+			StatusCode: constant.StatusErrorCode,
+			StatusMsg:  "token解析失败",
+			VideoList:  nil,
+		}
+		return res, nil
+	}
+
+	videos, err := videoRepo.QueryVideoListByUserID(req.UserId)
 	if err != nil {
 		logger.Errorf("Error occurs when querying video list from database. %v", err)
-		return nil, err
+		res := &video.PublishListResponse{
+			StatusCode: constant.StatusErrorCode,
+			StatusMsg:  "内部数据库错误，获取视频失败",
+			VideoList:  nil,
+		}
+		return res, nil
 	}
+
+	if videos == nil {
+		res := &video.PublishListResponse{
+			StatusCode: constant.StatusOKCode,
+			StatusMsg:  fmt.Sprintf("用户id为%d的用户视频不存在", req.UserId),
+			VideoList:  nil,
+		}
+		return res, nil
+	}
+
+	// 处理videos中的点赞关系和minio中的视频url和封面url
+	for _, v := range videos {
+		liked, err := videoRepo.QueryVideoLikeRelation(int64(v.ID), claims.Id)
+		if err != nil {
+			logger.Errorf("Error occurs when querying video like relation from database. %v", err)
+			res := &video.PublishListResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "内部数据库错误，获取视频失败",
+				VideoList:  nil,
+			}
+			return res, nil
+		}
+		v.IsFavorite = liked
+
+		playUrl, err := oss.GetObjectURL(oss.VideoBucketName, v.PlayURL)
+		if err != nil {
+			logger.Errorf("Error occurs when getting video url from minio. %v", err)
+			res := &video.PublishListResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "内部minio数据库错误，获取视频失败",
+				VideoList:  nil,
+			}
+			return res, nil
+		}
+		v.PlayURL = playUrl
+
+		coverUrl, err := oss.GetObjectURL(oss.CoverBucketName, v.CoverURL)
+		if err != nil {
+			logger.Errorf("Error occurs when getting cover url from minio. %v", err)
+			res := &video.PublishListResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "内部minio数据库错误，获取视频失败",
+				VideoList:  nil,
+			}
+			return res, nil
+		}
+		v.CoverURL = coverUrl
+	}
+
 	videoListProto, err := converter.ConvertVideoModelListToProto(videos)
 	if err != nil {
 		logger.Errorf("Error occurs when converting video lists to proto. %v", err)
-		return nil, err
+		res := &video.PublishListResponse{
+			StatusCode: constant.StatusErrorCode,
+			StatusMsg:  "内部转换错误，获取视频失败",
+			VideoList:  nil,
+		}
+		return res, nil
 	}
 
 	res := &video.PublishListResponse{

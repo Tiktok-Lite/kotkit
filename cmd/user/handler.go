@@ -7,6 +7,7 @@ import (
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/user"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/converter"
+	"github.com/Tiktok-Lite/kotkit/pkg/oss"
 )
 
 // UserServiceImpl implements the last service interface defined in the IDL.
@@ -59,6 +60,32 @@ func (s *UserServiceImpl) UserInfo(ctx context.Context, req *user.UserInfoReques
 		}
 		return res, nil
 	}
+	// 如果查询不到，说明当前用户没有关注该用户
+	usr.IsFollow = isRelated
+
+	avatarUrl, err := oss.GetObjectURL(oss.AvatarBucketName, usr.Avatar)
+	if err != nil {
+		logger.Errorf("Failed to get object url due to %v", err)
+		res := &user.UserInfoResponse{
+			StatusCode: constant.StatusErrorCode,
+			StatusMsg:  "minio数据库查询错误",
+			User:       nil,
+		}
+		return res, nil
+	}
+	usr.Avatar = avatarUrl
+
+	bgImgUrl, err := oss.GetObjectURL(oss.BackgroundImageBucketName, usr.BackgroundImage)
+	if err != nil {
+		logger.Errorf("Failed to get object url due to %v", err)
+		res := &user.UserInfoResponse{
+			StatusCode: constant.StatusErrorCode,
+			StatusMsg:  "minio数据库查询错误",
+			User:       nil,
+		}
+		return res, nil
+	}
+	usr.BackgroundImage = bgImgUrl
 
 	// 从数据库中查询到的user，转换为proto生成后的类型
 	userResp, err := converter.ConvertUserModelToProto(usr)
@@ -71,9 +98,6 @@ func (s *UserServiceImpl) UserInfo(ctx context.Context, req *user.UserInfoReques
 		}
 		return res, nil
 	}
-
-	// 如果查询不到，说明当前用户没有关注该用户
-	userResp.IsFollow = isRelated
 
 	res := &user.UserInfoResponse{
 		StatusCode: constant.StatusOKCode,

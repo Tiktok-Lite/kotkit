@@ -32,7 +32,7 @@ func Register(ctx context.Context, c *app.RequestContext) {
 	resp, err := rpc.Register(ctx, req)
 	if err != nil {
 		logger.Errorf("register error: %v", err)
-		ResponseError(c, http.StatusInternalServerError, response.PackLoginOrRegisterError("服务器内部错误，注册失败"))
+		ResponseError(c, http.StatusInternalServerError, response.PackLoginOrRegisterError(resp.StatusMsg))
 		return
 	}
 
@@ -60,6 +60,6 @@ func Login(ctx context.Context, c *app.RequestContext) {
 		ResponseError(c, http.StatusInternalServerError, response.PackLoginOrRegisterError("服务器内部错误，登录失败"))
 		return
 	}
-	
+
 	ResponseSuccess(c, response.PackLoginOrRegisterSuccess(resp.UserId, resp.Token, resp.StatusMsg))
 }
