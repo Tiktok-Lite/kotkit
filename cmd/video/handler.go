@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/Tiktok-Lite/kotkit/internal/db"
 	"github.com/Tiktok-Lite/kotkit/internal/model"
-	"github.com/Tiktok-Lite/kotkit/internal/repository"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/video"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/converter"
@@ -16,11 +15,6 @@ import (
 
 // VideoServiceImpl implements the last service interface defined in the IDL.
 type VideoServiceImpl struct{}
-
-var (
-	repo      = repository.NewRepository(db.DB())
-	videoRepo = repository.NewVideoRepository(repo)
-)
 
 // Feed implements the VideoServiceImpl interface.
 func (s *VideoServiceImpl) Feed(ctx context.Context, req *video.FeedRequest) (*video.FeedResponse, error) {
@@ -43,7 +37,7 @@ func (s *VideoServiceImpl) Feed(ctx context.Context, req *video.FeedRequest) (*v
 		}
 	}
 
-	videos, err := videoRepo.Feed(req.LatestTime)
+	videos, err := db.Feed(req.LatestTime)
 	if err != nil {
 		logger.Errorf("Error occurs when querying video list from database. %v", err)
 		res := &video.FeedResponse{
@@ -62,7 +56,7 @@ func (s *VideoServiceImpl) Feed(ctx context.Context, req *video.FeedRequest) (*v
 
 	// 处理videos中的点赞关系和minio中的视频url和封面url
 	for _, v := range videos {
-		liked, err := videoRepo.QueryVideoLikeRelation(int64(v.ID), uid)
+		liked, err := db.QueryVideoLikeRelation(int64(v.ID), uid)
 		if err != nil {
 			logger.Errorf("Error occurs when querying video like relation from database. %v", err)
 			res := &video.FeedResponse{
@@ -137,7 +131,7 @@ func (s *VideoServiceImpl) PublishList(ctx context.Context, req *video.PublishLi
 		return res, nil
 	}
 
-	videos, err := videoRepo.QueryVideoListByUserID(req.UserId)
+	videos, err := db.QueryVideoListByUserID(req.UserId)
 	if err != nil {
 		logger.Errorf("Error occurs when querying video list from database. %v", err)
 		res := &video.PublishListResponse{
@@ -159,7 +153,7 @@ func (s *VideoServiceImpl) PublishList(ctx context.Context, req *video.PublishLi
 
 	// 处理videos中的点赞关系和minio中的视频url和封面url
 	for _, v := range videos {
-		liked, err := videoRepo.QueryVideoLikeRelation(int64(v.ID), claims.Id)
+		liked, err := db.QueryVideoLikeRelation(int64(v.ID), claims.Id)
 		if err != nil {
 			logger.Errorf("Error occurs when querying video like relation from database. %v", err)
 			res := &video.PublishListResponse{
@@ -261,7 +255,7 @@ func (s *VideoServiceImpl) PublishAction(ctx context.Context, req *video.Publish
 	// TODO: 在上传数据库和OSS中间加入事务
 	// 注意：先把东西上传到oss后写入数据库，目的是防止上传失败后数据库中有记录但是oss中没有
 	// 保证数据的原子性
-	err = videoRepo.CreateVideo(video_)
+	err = db.CreateVideo(video_)
 	if err != nil {
 		logger.Errorf("Error occurs when creating video to database. %v", err)
 		res := &video.PublicActionResponse{
