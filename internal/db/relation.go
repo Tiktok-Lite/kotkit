@@ -22,16 +22,19 @@ func NewRelation(userID uint, toUserID uint) error {
 		// 1. 新增关注数据
 		err := tx.Create(&FollowRelation{FollowerID: userID, UserID: toUserID}).Error
 		if err != nil {
+			tx.Rollback()
 			return errors.Wrap(err, "failed to create follow relation")
 		}
 
 		// 2. 改变 user 表中的 following count
 		if err := tx.Model(&model.User{}).Where("id = ?", userID).Update("follow_count", gorm.Expr("follow_count + ?", 1)).Error; err != nil {
+			tx.Rollback()
 			return errors.Wrap(err, "failed to update following count")
 		}
 
 		// 3. 改变 user 表中的 follower count
 		if err := tx.Model(&model.User{}).Where("id = ?", toUserID).Update("follower_count", gorm.Expr("follower_count + ?", 1)).Error; err != nil {
+			tx.Rollback()
 			return errors.Wrap(err, "failed to update follower count")
 		}
 
@@ -46,32 +49,24 @@ func DelRelation(userID uint, toUserID uint) error {
 		// 1. 删除关注数据
 		err := tx.Unscoped().Where("user_id = ? AND follower_id = ?", toUserID, userID).Delete(&relation).Error
 		if err != nil {
+			tx.Rollback()
 			return errors.Wrap(err, "failed to create follow relation")
 		}
 		// 2. 改变 user 表中的 following count
 		if err := tx.Model(&model.User{}).Where("id = ?", userID).Update("follow_count", gorm.Expr("follow_count - ?", 1)).Error; err != nil {
+			tx.Rollback()
 			return errors.Wrap(err, "failed to update following count")
 		}
 
 		// 3. 改变 user 表中的 follower count
 		if err := tx.Model(&model.User{}).Where("id = ?", toUserID).Update("follower_count", gorm.Expr("follower_count - ?", 1)).Error; err != nil {
+			tx.Rollback()
 			return errors.Wrap(err, "failed to update follower count")
 		}
 
 		return nil
 	})
 	return err
-}
-
-func QueryRelationByID(userID uint, followerID uint) (*model.User, error) {
-	var relation model.User
-	if err := DB().Where("user_id = ? AND follower_id IN ?", userID, followerID).First(&relation).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, errors.New("failed to query user by id")
-	}
-	return &relation, nil
 }
 
 func GetFollowerListByUserID(UserID uint) ([]*FollowRelation, error) {
