@@ -41,6 +41,11 @@ func apiRegister(hz *server.Hertz) {
 			publish.POST("/action/", handler.PublishAction)
 		}
 		douyin.GET("/feed/", handler.Feed)
+		favorite := douyin.Group("/favorite")
+		{
+			favorite.POST("/action/", handler.FavoriteAction)
+			favorite.GET("/list/", handler.FavoriteList)
+		}
 	}
 }
 

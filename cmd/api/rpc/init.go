@@ -14,4 +14,7 @@ func InitRPC() {
 
 	loginConfig := conf.LoadConfig(constant.DefaultLoginConfigName)
 	InitLogin(loginConfig)
+
+	favoriteConfig := conf.LoadConfig(constant.DefaultFavoriteConfigName)
+	InitFavorite(favoriteConfig)
 }
