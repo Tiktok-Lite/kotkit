@@ -3,6 +3,11 @@ package rpc
 import (
 	"github.com/Tiktok-Lite/kotkit/pkg/conf"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
+	"github.com/Tiktok-Lite/kotkit/pkg/log"
+)
+
+var (
+	logger = log.Logger()
 )
 
 func InitRPC() {

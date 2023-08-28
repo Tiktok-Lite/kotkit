@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/login"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/login/loginservice"
+	"github.com/Tiktok-Lite/kotkit/pkg/etcd"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/cloudwego/kitex/client"
 	"github.com/spf13/viper"
@@ -15,12 +16,18 @@ var (
 )
 
 func InitLogin(config *viper.Viper) {
-	loginServiceName := config.GetString("server.name")
-	loginServiceAddr := fmt.Sprintf("%s:%d", config.GetString("server.host"), config.GetInt("server.port"))
+	r, err := etcd.Resolver()
+	if err != nil {
+		logger.Errorf("Error occurs when creating etcd resolver: %v", err)
+		panic(err)
+	}
 
-	c, err := loginservice.NewClient(loginServiceName, client.WithHostPorts(loginServiceAddr))
+	loginServiceName := config.GetString("server.name")
+
+	c, err := loginservice.NewClient(loginServiceName, client.WithResolver(r))
 
 	if err != nil {
+		logger.Errorf("Error occurs when creating login client: %v", err)
 		panic(err)
 	}
 	loginClient = c
