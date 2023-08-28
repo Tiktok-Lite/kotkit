@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"github.com/Tiktok-Lite/kotkit/internal/model"
+	"github.com/Tiktok-Lite/kotkit/kitex_gen/relation"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -105,4 +106,16 @@ func GetFriendList(UserID uint) ([]*FollowRelation, error) {
 		return nil, errors.New("failed to query user by id")
 	}
 	return FriendList, nil
+}
+
+func RelationAction(UserId int64, req *relation.RelationActionRequest) error {
+	// 1-关注
+	if req.ActionType == 1 {
+		return NewRelation(uint(UserId), uint(req.ToUserId))
+	}
+	// 2-取消关注
+	if req.ActionType == 2 {
+		return DelRelation(uint(UserId), uint(req.ToUserId))
+	}
+	return nil
 }

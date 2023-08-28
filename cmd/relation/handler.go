@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"github.com/Tiktok-Lite/kotkit/cmd/relation/command"
 	"github.com/Tiktok-Lite/kotkit/internal/db"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/relation"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
@@ -36,9 +35,9 @@ func (s *RelationServiceImpl) RelationAction(ctx context.Context, req *relation.
 		}
 		return res, nil
 	}
-	err = command.NewRelationActionService(ctx).RelationAction(claims.Id, req)
+	err = db.RelationAction(claims.Id, req)
 	if err != nil {
-		logger.Errorf("Error occurs when converting relation lists to proto. %v", err)
+		logger.Errorf("数据库内部错误：%v", err)
 		return nil, err
 	}
 
@@ -97,7 +96,13 @@ func (s *RelationServiceImpl) RelationFollowList(ctx context.Context, req *relat
 	}
 	userListProto, err := converter.ConvertFollowingListModelToProto(followings)
 	if err != nil {
-		return nil, err
+		logger.Errorf(err.Error())
+		res := &relation.RelationFollowListResponse{
+			StatusCode: constant.StatusErrorCode,
+			StatusMsg:  "内部转换错误，获取关注列表失败",
+			UserList:   nil,
+		}
+		return res, nil
 	}
 
 	// 返回结果
@@ -119,7 +124,7 @@ func (s *RelationServiceImpl) RelationFollowerList(ctx context.Context, req *rel
 	if err != nil {
 		logger.Errorf(err.Error())
 		res := &relation.RelationFollowerListResponse{
-			StatusCode: -1,
+			StatusCode: constant.StatusErrorCode,
 			StatusMsg:  "token 解析错误",
 		}
 		return res, nil
@@ -144,7 +149,13 @@ func (s *RelationServiceImpl) RelationFollowerList(ctx context.Context, req *rel
 	}
 	userListProto, err := converter.ConvertFollowerListModelToProto(followers)
 	if err != nil {
-		return nil, err
+		logger.Errorf(err.Error())
+		res := &relation.RelationFollowerListResponse{
+			StatusCode: constant.StatusErrorCode,
+			StatusMsg:  "内部转换错误，获取粉丝列表失败",
+			UserList:   nil,
+		}
+		return res, nil
 	}
 
 	// 返回结果
@@ -193,7 +204,13 @@ func (s *RelationServiceImpl) RelationFriendList(ctx context.Context, req *relat
 	}
 	userListProto, err := converter.ConvertFollowerListModelToProto(friends)
 	if err != nil {
-		return nil, err
+		logger.Errorf(err.Error())
+		res := &relation.RelationFriendListResponse{
+			StatusCode: constant.StatusErrorCode,
+			StatusMsg:  "内部转换错误，获取朋友列表失败",
+			UserList:   nil,
+		}
+		return res, nil
 	}
 
 	// 返回结果
