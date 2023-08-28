@@ -14,4 +14,7 @@ func InitRPC() {
 
 	loginConfig := conf.LoadConfig(constant.DefaultLoginConfigName)
 	InitLogin(loginConfig)
+
+	relationConfig := conf.LoadConfig(constant.DefaultRelationConfigName)
+	InitRelation(relationConfig)
 }
