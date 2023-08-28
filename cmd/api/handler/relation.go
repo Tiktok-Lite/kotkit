@@ -15,7 +15,18 @@ func FollowerList(ctx context.Context, c *app.RequestContext) {
 	logger := log.Logger()
 
 	userID := c.Query("user_id")
+	if userID == "" {
+		logger.Info("Input user_id is empty")
+		ResponseError(c, http.StatusBadRequest, response.PackListError("user_id不能为空"))
+		return
+	}
 	token := c.Query("token")
+	if token == "" {
+		logger.Info("Input token is empty")
+		ResponseError(c, http.StatusBadRequest, response.PackListError("token不能为空"))
+		return
+	}
+
 	id, err := strconv.ParseInt(userID, 10, 64)
 	if err != nil {
 		logger.Errorf("failed to parse user_id: %v", err)
@@ -30,18 +41,12 @@ func FollowerList(ctx context.Context, c *app.RequestContext) {
 	resp, err := rpc.RelationFollowerList(ctx, req)
 	if err != nil {
 		logger.Errorf("failed to call rpc: %v", err)
-		ResponseError(c, http.StatusInternalServerError,
-			response.PackListError("粉丝列表获取失败，服务器内部问题"))
-		return
-	}
-	if resp.StatusCode == -1 {
-		c.JSON(http.StatusOK, response.Relation{
+		ResponseError(c, http.StatusInternalServerError, response.Relation{
 			Base: response.Base{
 				StatusCode: -1,
 				StatusMsg:  resp.StatusMsg,
 			},
 		})
-		return
 	}
 	ResponseSuccess(c, response.PackListSuccess(resp.UserList, "粉丝列表获取成功"))
 }
@@ -50,7 +55,17 @@ func FollowList(ctx context.Context, c *app.RequestContext) {
 	logger := log.Logger()
 
 	userID := c.Query("user_id")
+	if userID == "" {
+		logger.Info("Input user_id is empty")
+		ResponseError(c, http.StatusBadRequest, response.PackListError("user_id不能为空"))
+		return
+	}
 	token := c.Query("token")
+	if token == "" {
+		logger.Info("Input token is empty")
+		ResponseError(c, http.StatusBadRequest, response.PackListError("token不能为空"))
+		return
+	}
 	id, err := strconv.ParseInt(userID, 10, 64)
 	if err != nil {
 		logger.Errorf("failed to parse user_id: %v", err)
@@ -66,16 +81,7 @@ func FollowList(ctx context.Context, c *app.RequestContext) {
 	if err != nil {
 		logger.Errorf("failed to call rpc: %v", err)
 		ResponseError(c, http.StatusInternalServerError,
-			response.PackListError("关注列表获取失败，服务器内部问题"))
-		return
-	}
-	if resp.StatusCode == -1 {
-		c.JSON(http.StatusOK, response.Relation{
-			Base: response.Base{
-				StatusCode: -1,
-				StatusMsg:  resp.StatusMsg,
-			},
-		})
+			response.PackListError(resp.StatusMsg))
 		return
 	}
 	ResponseSuccess(c, response.PackListSuccess(resp.UserList, "关注列表获取成功"))
@@ -85,7 +91,17 @@ func FriendList(ctx context.Context, c *app.RequestContext) {
 	logger := log.Logger()
 
 	userID := c.Query("user_id")
+	if userID == "" {
+		logger.Info("Input user_id is empty")
+		ResponseError(c, http.StatusBadRequest, response.PackListError("user_id不能为空"))
+		return
+	}
 	token := c.Query("token")
+	if token == "" {
+		logger.Info("Input token is empty")
+		ResponseError(c, http.StatusBadRequest, response.PackListError("token不能为空"))
+		return
+	}
 	id, err := strconv.ParseInt(userID, 10, 64)
 	if err != nil {
 		logger.Errorf("failed to parse user_id: %v", err)
@@ -101,25 +117,20 @@ func FriendList(ctx context.Context, c *app.RequestContext) {
 	if err != nil {
 		logger.Errorf("failed to call rpc: %v", err)
 		ResponseError(c, http.StatusInternalServerError,
-			response.PackListError("好友列表获取失败，服务器内部问题"))
+			response.PackListError(resp.StatusMsg))
 		return
 	}
-	if resp.StatusCode == -1 {
-		c.JSON(http.StatusOK, response.Relation{
-			Base: response.Base{
-				StatusCode: -1,
-				StatusMsg:  resp.StatusMsg,
-			},
-		})
-		return
-	}
-
 	ResponseSuccess(c, response.PackListSuccess(resp.UserList, "好友列表获取成功"))
 }
 
 func RelationAction(ctx context.Context, c *app.RequestContext) {
 	logger := log.Logger()
 	toUserID := c.Query("to_user_id")
+	if toUserID == "" {
+		logger.Info("Input to_user_id is empty")
+		ResponseError(c, http.StatusBadRequest, response.PackActionError("to_user_id不能为空"))
+		return
+	}
 	tid, err := strconv.ParseInt(toUserID, 10, 64)
 	if err != nil {
 		logger.Errorf("failed to parse user_id: %v", err)
@@ -133,7 +144,7 @@ func RelationAction(ctx context.Context, c *app.RequestContext) {
 	}
 	actionType, err := strconv.ParseInt(c.Query("action_type"), 10, 64)
 	if err != nil || (actionType != 1 && actionType != 2) {
-		c.JSON(http.StatusOK, response.Relation{
+		ResponseError(c, http.StatusOK, response.Relation{
 			Base: response.Base{
 				StatusCode: -1,
 				StatusMsg:  "action_type 不合法",
@@ -143,12 +154,8 @@ func RelationAction(ctx context.Context, c *app.RequestContext) {
 	}
 	token := c.Query("token")
 	if token == "" {
-		c.JSON(http.StatusOK, response.Relation{
-			Base: response.Base{
-				StatusCode: -1,
-				StatusMsg:  "Token 已过期",
-			},
-		})
+		logger.Info("Input token is empty")
+		ResponseError(c, http.StatusBadRequest, response.PackPublishListError("token不能为空"))
 		return
 	}
 	req := &relation.RelationActionRequest{
@@ -156,24 +163,12 @@ func RelationAction(ctx context.Context, c *app.RequestContext) {
 		Token:      token,
 		ActionType: int32(actionType),
 	}
-	resp, err := rpc.RelationActionList(ctx, req)
+	resp, err := rpc.RelationAction(ctx, req)
 	if err != nil {
 		logger.Errorf("failed to call rpc: %v", err)
 		ResponseError(c, http.StatusInternalServerError,
-			response.PackActionError("服务器内部问题"))
+			response.PackActionError(resp.StatusMsg))
 		return
 	}
-	if resp.StatusCode == -1 {
-		c.JSON(http.StatusOK, response.Relation{
-			Base: response.Base{
-				StatusCode: -1,
-				StatusMsg:  resp.StatusMsg,
-			},
-		})
-		return
-	}
-	c.JSON(http.StatusOK, response.Base{
-		StatusCode: 0,
-		StatusMsg:  resp.StatusMsg,
-	})
+	ResponseSuccess(c, response.PackActionSuccess(resp.StatusMsg))
 }

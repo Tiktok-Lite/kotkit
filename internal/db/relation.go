@@ -93,7 +93,6 @@ func GetFollowingListByUserID(UserID uint) ([]*FollowRelation, error) {
 		}
 		return nil, errors.New("failed to query user by id")
 	}
-	fmt.Println(RelationList)
 	return RelationList, nil
 }
 

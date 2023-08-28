@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/Tiktok-Lite/kotkit/cmd/relation/command"
 	"github.com/Tiktok-Lite/kotkit/internal/db"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/relation"
@@ -22,7 +21,7 @@ func (s *RelationServiceImpl) RelationAction(ctx context.Context, req *relation.
 	if err != nil {
 		logger.Errorf(err.Error())
 		res := &relation.RelationActionResponse{
-			StatusCode: -1,
+			StatusCode: constant.StatusErrorCode,
 			StatusMsg:  "token 解析错误",
 		}
 		return res, nil
@@ -32,16 +31,8 @@ func (s *RelationServiceImpl) RelationAction(ctx context.Context, req *relation.
 	if userID == toUserID {
 		logger.Errorf("操作非法：用户无法成为自己的粉丝：%d", userID)
 		res := &relation.RelationActionResponse{
-			StatusCode: -1,
+			StatusCode: constant.StatusErrorCode,
 			StatusMsg:  "操作非法：用户无法成为自己的粉丝",
-		}
-		return res, nil
-	}
-	if req.ActionType != 1 && req.ActionType != 2 {
-		logger.Errorf("action_type 格式错误")
-		res := &relation.RelationActionResponse{
-			StatusCode: -1,
-			StatusMsg:  "action_type 格式错误",
 		}
 		return res, nil
 	}
@@ -81,7 +72,7 @@ func (s *RelationServiceImpl) RelationFollowList(ctx context.Context, req *relat
 	if err != nil {
 		logger.Errorf(err.Error())
 		res := &relation.RelationFollowListResponse{
-			StatusCode: -1,
+			StatusCode: constant.StatusErrorCode,
 			StatusMsg:  "token 解析错误",
 		}
 		return res, nil
@@ -89,7 +80,7 @@ func (s *RelationServiceImpl) RelationFollowList(ctx context.Context, req *relat
 	if userID != claims.Id {
 		logger.Errorf("当前登录用户%d无法访问其他用户的关注列表%d", claims.Id, userID)
 		res := &relation.RelationFollowListResponse{
-			StatusCode: -1,
+			StatusCode: constant.StatusErrorCode,
 			StatusMsg:  "当前登录用户无法访问其他用户的关注列表",
 		}
 		return res, nil
@@ -99,20 +90,19 @@ func (s *RelationServiceImpl) RelationFollowList(ctx context.Context, req *relat
 	if err != nil {
 		logger.Errorf(err.Error())
 		res := &relation.RelationFollowListResponse{
-			StatusCode: -1,
+			StatusCode: constant.StatusErrorCode,
 			StatusMsg:  "关注列表获取失败",
 		}
 		return res, nil
 	}
 	userListProto, err := converter.ConvertFollowingListModelToProto(followings)
-	fmt.Println(userListProto)
 	if err != nil {
 		return nil, err
 	}
 
 	// 返回结果
 	res := &relation.RelationFollowListResponse{
-		StatusCode: 0,
+		StatusCode: constant.StatusOKCode,
 		StatusMsg:  "success",
 		UserList:   userListProto,
 	}
@@ -137,7 +127,7 @@ func (s *RelationServiceImpl) RelationFollowerList(ctx context.Context, req *rel
 	if userID != claims.Id {
 		logger.Errorf("当前登录用户%d无法访问其他用户的粉丝列表%d", claims.Id, userID)
 		res := &relation.RelationFollowerListResponse{
-			StatusCode: -1,
+			StatusCode: constant.StatusErrorCode,
 			StatusMsg:  "当前登录用户无法访问其他用户的粉丝列表",
 		}
 		return res, nil
@@ -147,7 +137,7 @@ func (s *RelationServiceImpl) RelationFollowerList(ctx context.Context, req *rel
 	if err != nil {
 		logger.Errorf(err.Error())
 		res := &relation.RelationFollowerListResponse{
-			StatusCode: -1,
+			StatusCode: constant.StatusErrorCode,
 			StatusMsg:  "粉丝列表获取失败",
 		}
 		return res, nil
@@ -159,7 +149,7 @@ func (s *RelationServiceImpl) RelationFollowerList(ctx context.Context, req *rel
 
 	// 返回结果
 	res := &relation.RelationFollowerListResponse{
-		StatusCode: 0,
+		StatusCode: constant.StatusOKCode,
 		StatusMsg:  "success",
 		UserList:   userListProto,
 	}
@@ -178,7 +168,7 @@ func (s *RelationServiceImpl) RelationFriendList(ctx context.Context, req *relat
 	if err != nil {
 		logger.Errorf(err.Error())
 		res := &relation.RelationFriendListResponse{
-			StatusCode: -1,
+			StatusCode: constant.StatusErrorCode,
 			StatusMsg:  "token 解析错误",
 		}
 		return res, nil
@@ -186,10 +176,9 @@ func (s *RelationServiceImpl) RelationFriendList(ctx context.Context, req *relat
 	if userID != claims.Id {
 		logger.Errorf("当前登录用户%d无法访问其他用户的朋友列表%d", claims.Id, userID)
 		res := &relation.RelationFriendListResponse{
-			StatusCode: -1,
+			StatusCode: constant.StatusErrorCode,
 			StatusMsg:  "当前登录用户无法访问其他用户的朋友列表",
 		}
-		fmt.Println(res)
 		return res, nil
 	}
 	// 从数据库获取朋友列表
@@ -197,7 +186,7 @@ func (s *RelationServiceImpl) RelationFriendList(ctx context.Context, req *relat
 	if err != nil {
 		logger.Errorf(err.Error())
 		res := &relation.RelationFriendListResponse{
-			StatusCode: -1,
+			StatusCode: constant.StatusErrorCode,
 			StatusMsg:  "好友列表获取失败",
 		}
 		return res, nil
@@ -209,7 +198,7 @@ func (s *RelationServiceImpl) RelationFriendList(ctx context.Context, req *relat
 
 	// 返回结果
 	res := &relation.RelationFriendListResponse{
-		StatusCode: 0,
+		StatusCode: constant.StatusOKCode,
 		StatusMsg:  "success",
 		UserList:   userListProto,
 	}
