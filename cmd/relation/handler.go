@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"github.com/Tiktok-Lite/kotkit/cmd/relation/command"
 	"github.com/Tiktok-Lite/kotkit/internal/db"
 	"github.com/Tiktok-Lite/kotkit/internal/repository"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/relation"
-	"github.com/Tiktok-Lite/kotkit/kitex_gen/user"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
+	"github.com/Tiktok-Lite/kotkit/pkg/helper/converter"
 	"github.com/Tiktok-Lite/kotkit/pkg/log"
 )
 
@@ -49,17 +51,29 @@ func (s *RelationServiceImpl) RelationAction(ctx context.Context, req *relation.
 		}
 		return res, nil
 	}
+	err = command.NewRelationActionService(ctx).RelationAction(claims.Id, req)
 	if err != nil {
-		logger.Errorf("Error occurs when converting video lists to proto. %v", err)
+		logger.Errorf("Error occurs when converting relation lists to proto. %v", err)
 		return nil, err
 	}
 
-	res := &relation.RelationActionResponse{
-		StatusCode: constant.StatusOKCode,
-		StatusMsg:  "操作成功",
+	if req.ActionType == 1 {
+		res := &relation.RelationActionResponse{
+			StatusCode: constant.StatusOKCode,
+			StatusMsg:  "关注成功",
+		}
+		return res, nil
 	}
 
-	return res, nil
+	if req.ActionType == 2 {
+		res := &relation.RelationActionResponse{
+			StatusCode: constant.StatusOKCode,
+			StatusMsg:  "取关成功",
+		}
+		return res, nil
+	}
+
+	return nil, nil
 }
 
 // RelationFollowList implements the RelationServiceImpl interface.
@@ -86,8 +100,7 @@ func (s *RelationServiceImpl) RelationFollowList(ctx context.Context, req *relat
 		}
 		return res, nil
 	}
-
-	// 从数据库获取关注列表
+	//从数据库获取关注列表
 	followings, err := relationRepo.GetFollowingListByUserID(uint(userID))
 	if err != nil {
 		logger.Errorf(err.Error())
@@ -97,13 +110,9 @@ func (s *RelationServiceImpl) RelationFollowList(ctx context.Context, req *relat
 		}
 		return res, nil
 	}
-	userIDs := make([]int64, 0)
-	for _, res := range followings {
-		userIDs = append(userIDs, int64(res.ToUserId))
-	}
-	userList := make([]*user.User, 0)
+	userListProto, err := converter.ConvertFollowingListModelToProto(followings)
+	fmt.Println(userListProto)
 	if err != nil {
-		logger.Errorf("Error occurs when converting video lists to proto. %v", err)
 		return nil, err
 	}
 
@@ -111,7 +120,7 @@ func (s *RelationServiceImpl) RelationFollowList(ctx context.Context, req *relat
 	res := &relation.RelationFollowListResponse{
 		StatusCode: 0,
 		StatusMsg:  "success",
-		UserList:   userList,
+		UserList:   userListProto,
 	}
 	return res, nil
 }
@@ -119,10 +128,8 @@ func (s *RelationServiceImpl) RelationFollowList(ctx context.Context, req *relat
 // RelationFollowerList implements the RelationServiceImpl interface.
 func (s *RelationServiceImpl) RelationFollowerList(ctx context.Context, req *relation.RelationFollowerListRequest) (resp *relation.RelationFollowerListResponse, err error) {
 	// TODO: Your code here...
-	// TODO: Your code here...
 	logger := log.Logger()
 	userID := req.UserId
-
 	// 解析token,获取用户id
 	claims, err := Jwt.ParseToken(req.Token)
 	if err != nil {
@@ -141,7 +148,6 @@ func (s *RelationServiceImpl) RelationFollowerList(ctx context.Context, req *rel
 		}
 		return res, nil
 	}
-
 	// 从数据库获取粉丝列表
 	followers, err := relationRepo.GetFollowerListByUserID(uint(userID))
 	if err != nil {
@@ -152,13 +158,8 @@ func (s *RelationServiceImpl) RelationFollowerList(ctx context.Context, req *rel
 		}
 		return res, nil
 	}
-	userIDs := make([]int64, 0)
-	for _, res := range followers {
-		userIDs = append(userIDs, int64(res.ToUserId))
-	}
-	userList := make([]*user.User, 0)
+	userListProto, err := converter.ConvertFollowerListModelToProto(followers)
 	if err != nil {
-		logger.Errorf("Error occurs when converting video lists to proto. %v", err)
 		return nil, err
 	}
 
@@ -166,7 +167,7 @@ func (s *RelationServiceImpl) RelationFollowerList(ctx context.Context, req *rel
 	res := &relation.RelationFollowerListResponse{
 		StatusCode: 0,
 		StatusMsg:  "success",
-		UserList:   userList,
+		UserList:   userListProto,
 	}
 	return res, nil
 }
@@ -174,5 +175,49 @@ func (s *RelationServiceImpl) RelationFollowerList(ctx context.Context, req *rel
 // RelationFriendList implements the RelationServiceImpl interface.
 func (s *RelationServiceImpl) RelationFriendList(ctx context.Context, req *relation.RelationFriendListRequest) (resp *relation.RelationFriendListResponse, err error) {
 	// TODO: Your code here...
-	return
+	logger := log.Logger()
+	userID := req.UserId
+
+	// 解析token,获取用户id
+	claims, err := Jwt.ParseToken(req.Token)
+
+	if err != nil {
+		logger.Errorf(err.Error())
+		res := &relation.RelationFriendListResponse{
+			StatusCode: -1,
+			StatusMsg:  "token 解析错误",
+		}
+		return res, nil
+	}
+	if userID != claims.Id {
+		logger.Errorf("当前登录用户%d无法访问其他用户的朋友列表%d", claims.Id, userID)
+		res := &relation.RelationFriendListResponse{
+			StatusCode: -1,
+			StatusMsg:  "当前登录用户无法访问其他用户的朋友列表",
+		}
+		fmt.Println(res)
+		return res, nil
+	}
+	// 从数据库获取朋友列表
+	friends, err := relationRepo.GetFriendList(uint(userID))
+	if err != nil {
+		logger.Errorf(err.Error())
+		res := &relation.RelationFriendListResponse{
+			StatusCode: -1,
+			StatusMsg:  "好友列表获取失败",
+		}
+		return res, nil
+	}
+	userListProto, err := converter.ConvertFollowerListModelToProto(friends)
+	if err != nil {
+		return nil, err
+	}
+
+	// 返回结果
+	res := &relation.RelationFriendListResponse{
+		StatusCode: 0,
+		StatusMsg:  "success",
+		UserList:   userListProto,
+	}
+	return res, nil
 }

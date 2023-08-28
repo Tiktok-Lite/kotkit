@@ -7,6 +7,7 @@ import "idl/user.proto";
 //  =========================关注和取关============================
 message RelationActionRequest{
   string token = 1; //鉴权
+//  int64 user_id = 2; //用户id
   int64 to_user_id = 2; //对方用户id
   int32 action_type = 3; //1代表关注 2代表取关
 }

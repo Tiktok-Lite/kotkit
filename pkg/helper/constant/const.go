@@ -8,6 +8,7 @@ const (
 	DefaultVideoConfigName    = "video"
 	DefaultLoginConfigName    = "login"
 	DefaultRelationConfigName = "relation"
+	DefaultMinioConfigName    = "minio"
 )
 
 const (

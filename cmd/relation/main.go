@@ -12,12 +12,14 @@ import (
 )
 
 var (
-	logger      = log.Logger()
-	userConfig  = conf.LoadConfig(constant.DefaultRelationConfigName)
-	serviceName = userConfig.GetString("server.name")
-	signingKey  = userConfig.GetString("JWT.signingKey")
-	serviceAddr = fmt.Sprintf("%s:%d", userConfig.GetString("server.host"), userConfig.GetInt("server.port"))
-	Jwt         *jwt.JWT
+	logger = log.Logger()
+	//这里不是userconfig 去看下最新的user下main的代码
+	relationConfig = conf.LoadConfig(constant.DefaultRelationConfigName)
+	serviceName    = relationConfig.GetString("server.name")
+	serviceAddr    = fmt.Sprintf("%s:%d", relationConfig.GetString("server.host"), relationConfig.GetInt("server.port"))
+	jwtConfig      = conf.LoadConfig(constant.DefaultLoginConfigName)
+	signingKey     = jwtConfig.GetString("JWT.signingKey") // zhelibudui...你去看下最新的代码，不是从usserconfig读取签jwt的密钥
+	Jwt            *jwt.JWT
 )
 
 func init() {

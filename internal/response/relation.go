@@ -4,23 +4,40 @@ import (
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/user"
 )
 
-type Relation struct {
+type RelationList struct {
 	Base
 	UserList []*user.User `json:"user_list"`
 }
 
-func PackListSuccess(userList []*user.User, msg string) Relation {
+type Relation struct {
+	Base
+}
+
+func PackListSuccess(userList []*user.User, msg string) RelationList {
 	base := PackBaseSuccess(msg)
-	return Relation{
+	return RelationList{
 		Base:     base,
 		UserList: userList,
 	}
 }
 
-func PackListError(errorMsg string) Relation {
+func PackListError(errorMsg string) RelationList {
 	base := PackBaseError(errorMsg)
-	return Relation{
+	return RelationList{
 		Base:     base,
 		UserList: nil,
+	}
+}
+
+func PackActionSuccess(msg string) Relation {
+	base := PackBaseSuccess(msg)
+	return Relation{
+		Base: base,
+	}
+}
+func PackActionError(errorMsg string) Relation {
+	base := PackBaseError(errorMsg)
+	return Relation{
+		Base: base,
 	}
 }

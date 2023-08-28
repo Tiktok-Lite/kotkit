@@ -21,6 +21,7 @@ func newDB(config *viper.Viper) *gorm.DB {
 	logger := log.Logger()
 
 	connInfo := config.GetString("data.mysql.user")
+	logger.Infof("get mysql info %v", connInfo)
 	var err error
 	_db, err := gorm.Open(mysql.New(mysql.Config{
 		DSN:                       connInfo,

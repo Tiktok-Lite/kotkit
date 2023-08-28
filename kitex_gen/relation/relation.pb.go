@@ -28,9 +28,10 @@ type RelationActionRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Token      string `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`                              //鉴权
-	ToUserId   int64  `protobuf:"varint,2,opt,name=to_user_id,json=toUserId,proto3" json:"to_user_id,omitempty"`     //对方用户id
-	ActionType int32  `protobuf:"varint,3,opt,name=action_type,json=actionType,proto3" json:"action_type,omitempty"` //1代表关注 2代表取关
+	Token string `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"` //鉴权
+	// int64 user_id = 2; //用户id
+	ToUserId   int64 `protobuf:"varint,2,opt,name=to_user_id,json=toUserId,proto3" json:"to_user_id,omitempty"`     //对方用户id
+	ActionType int32 `protobuf:"varint,3,opt,name=action_type,json=actionType,proto3" json:"action_type,omitempty"` //1代表关注 2代表取关
 }
 
 func (x *RelationActionRequest) Reset() {

@@ -48,6 +48,7 @@ func apiRegister(hz *server.Hertz) {
 			relation.GET("/follow/list/", handler.FollowList)
 			// 朋友列表
 			relation.GET("/friend/list/", handler.FriendList)
+			// 关注和取关
 			relation.POST("/action/", handler.RelationAction)
 		}
 		douyin.GET("/feed/", handler.Feed)

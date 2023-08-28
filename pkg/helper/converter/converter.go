@@ -1,10 +1,18 @@
 package converter
 
 import (
+	"github.com/Tiktok-Lite/kotkit/internal/db"
 	"github.com/Tiktok-Lite/kotkit/internal/model"
+	"github.com/Tiktok-Lite/kotkit/internal/repository"
 	genUser "github.com/Tiktok-Lite/kotkit/kitex_gen/user"
 	genVideo "github.com/Tiktok-Lite/kotkit/kitex_gen/video"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
+)
+
+var (
+	repo     = repository.NewRepository(db.DB())
+	userRepo = repository.NewUserRepository(repo)
 )
 
 func ConvertVideoModelListToProto(videoList []*model.Video) ([]*genVideo.Video, error) {
@@ -27,6 +35,38 @@ func ConvertVideoModelListToProto(videoList []*model.Video) ([]*genVideo.Video, 
 	}
 
 	return res, nil
+}
+
+func ConvertFollowingListModelToProto(userList []*repository.FollowRelation) ([]*genUser.User, error) {
+	users := make([]*genUser.User, 0)
+	if userList == nil {
+		return nil, errors.New("user is nil")
+	}
+	for _, user := range userList {
+		user2, err := userRepo.QueryUserByID(int64(user.UserID))
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, err
+		}
+		userProto, _ := ConvertUserModelToProto(user2)
+		users = append(users, userProto)
+	}
+	return users, nil
+}
+
+func ConvertFollowerListModelToProto(userList []*repository.FollowRelation) ([]*genUser.User, error) {
+	users := make([]*genUser.User, 0)
+	if userList == nil {
+		return nil, errors.New("user is nil")
+	}
+	for _, user := range userList {
+		user2, err := userRepo.QueryUserByID(int64(user.FollowerID))
+		if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, err
+		}
+		userProto, _ := ConvertUserModelToProto(user2)
+		users = append(users, userProto)
+	}
+	return users, nil
 }
 
 func ConvertUserModelToProto(user *model.User) (*genUser.User, error) {
