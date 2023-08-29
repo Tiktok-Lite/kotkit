@@ -4,9 +4,12 @@ import (
 	"context"
 	"github.com/Tiktok-Lite/kotkit/internal/db"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/relation"
+	"github.com/Tiktok-Lite/kotkit/kitex_gen/user"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/converter"
 	"github.com/Tiktok-Lite/kotkit/pkg/log"
+	"github.com/pkg/errors"
+	"gorm.io/gorm"
 )
 
 // RelationServiceImpl implements the last service interface defined in the IDL.
@@ -14,7 +17,6 @@ type RelationServiceImpl struct{}
 
 // RelationAction implements the RelationServiceImpl interface.
 func (s *RelationServiceImpl) RelationAction(ctx context.Context, req *relation.RelationActionRequest) (resp *relation.RelationActionResponse, err error) {
-	// TODO: Your code here...
 	logger := log.Logger()
 	claims, err := Jwt.ParseToken(req.Token)
 	if err != nil {
@@ -41,7 +43,7 @@ func (s *RelationServiceImpl) RelationAction(ctx context.Context, req *relation.
 		return nil, err
 	}
 
-	if req.ActionType == 1 {
+	if req.ActionType == constant.FollowUserCode {
 		res := &relation.RelationActionResponse{
 			StatusCode: constant.StatusOKCode,
 			StatusMsg:  "关注成功",
@@ -49,7 +51,7 @@ func (s *RelationServiceImpl) RelationAction(ctx context.Context, req *relation.
 		return res, nil
 	}
 
-	if req.ActionType == 2 {
+	if req.ActionType == constant.UnFollowUserCode {
 		res := &relation.RelationActionResponse{
 			StatusCode: constant.StatusOKCode,
 			StatusMsg:  "取关成功",
@@ -94,22 +96,46 @@ func (s *RelationServiceImpl) RelationFollowList(ctx context.Context, req *relat
 		}
 		return res, nil
 	}
-	userListProto, err := converter.ConvertFollowingListModelToProto(followings)
-	if err != nil {
-		logger.Errorf(err.Error())
+
+	if followings == nil {
+		logger.Errorf("关注列表为空")
 		res := &relation.RelationFollowListResponse{
-			StatusCode: constant.StatusErrorCode,
-			StatusMsg:  "内部转换错误，获取关注列表失败",
+			StatusCode: constant.StatusOKCode,
+			StatusMsg:  "关注列表为空",
 			UserList:   nil,
 		}
 		return res, nil
+	}
+
+	userProtoList := make([]*user.User, 0)
+	for _, following := range followings {
+		user, err := db.QueryUserByID(int64(following.UserID))
+		if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+			logger.Errorf(err.Error())
+			res := &relation.RelationFollowListResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "关注列表获取失败",
+			}
+			return res, nil
+		}
+		userProto, err := converter.ConvertUserModelToProto(user)
+		if err != nil {
+			logger.Errorf(err.Error())
+			res := &relation.RelationFollowListResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "内部转换错误，获取关注列表失败",
+				UserList:   nil,
+			}
+			return res, nil
+		}
+		userProtoList = append(userProtoList, userProto)
 	}
 
 	// 返回结果
 	res := &relation.RelationFollowListResponse{
 		StatusCode: constant.StatusOKCode,
 		StatusMsg:  "success",
-		UserList:   userListProto,
+		UserList:   userProtoList,
 	}
 	return res, nil
 }
@@ -147,22 +173,45 @@ func (s *RelationServiceImpl) RelationFollowerList(ctx context.Context, req *rel
 		}
 		return res, nil
 	}
-	userListProto, err := converter.ConvertFollowerListModelToProto(followers)
-	if err != nil {
-		logger.Errorf(err.Error())
+	if followers == nil {
+		logger.Errorf("粉丝列表为空")
 		res := &relation.RelationFollowerListResponse{
-			StatusCode: constant.StatusErrorCode,
-			StatusMsg:  "内部转换错误，获取粉丝列表失败",
+			StatusCode: constant.StatusOKCode,
+			StatusMsg:  "粉丝列表为空",
 			UserList:   nil,
 		}
 		return res, nil
+	}
+
+	userProtoList := make([]*user.User, 0)
+	for _, follower := range followers {
+		user, err := db.QueryUserByID(int64(follower.FollowerID))
+		if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+			logger.Errorf(err.Error())
+			res := &relation.RelationFollowerListResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "粉丝列表获取失败",
+			}
+			return res, nil
+		}
+		userProto, err := converter.ConvertUserModelToProto(user)
+		if err != nil {
+			logger.Errorf(err.Error())
+			res := &relation.RelationFollowerListResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "内部转换错误，获取粉丝列表失败",
+				UserList:   nil,
+			}
+			return res, nil
+		}
+		userProtoList = append(userProtoList, userProto)
 	}
 
 	// 返回结果
 	res := &relation.RelationFollowerListResponse{
 		StatusCode: constant.StatusOKCode,
 		StatusMsg:  "success",
-		UserList:   userListProto,
+		UserList:   userProtoList,
 	}
 	return res, nil
 }
@@ -202,22 +251,50 @@ func (s *RelationServiceImpl) RelationFriendList(ctx context.Context, req *relat
 		}
 		return res, nil
 	}
-	userListProto, err := converter.ConvertFollowerListModelToProto(friends)
-	if err != nil {
-		logger.Errorf(err.Error())
+
+	if friends == nil {
+		logger.Errorf("好友列表为空")
 		res := &relation.RelationFriendListResponse{
-			StatusCode: constant.StatusErrorCode,
-			StatusMsg:  "内部转换错误，获取朋友列表失败",
+			StatusCode: constant.StatusOKCode,
+			StatusMsg:  "好友列表为空",
 			UserList:   nil,
 		}
 		return res, nil
+	}
+
+	userProtoList := make([]*user.User, 0)
+	for _, friend := range friends {
+		user, err := db.QueryUserByID(int64(friend.FollowerID))
+		if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+			logger.Errorf(err.Error())
+			res := &relation.RelationFriendListResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "好友列表获取失败",
+			}
+			return res, nil
+		}
+		userProto, err := converter.ConvertUserModelToProto(user)
+		if err != nil {
+			logger.Errorf(err.Error())
+			res := &relation.RelationFriendListResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "内部转换错误，获取好友列表失败",
+				UserList:   nil,
+			}
+			return res, nil
+		}
+		userProtoList = append(userProtoList, userProto)
+	}
+
+	for _, friend := range userProtoList {
+		friend.IsFollow = true
 	}
 
 	// 返回结果
 	res := &relation.RelationFriendListResponse{
 		StatusCode: constant.StatusOKCode,
 		StatusMsg:  "success",
-		UserList:   userListProto,
+		UserList:   userProtoList,
 	}
 	return res, nil
 }
