@@ -11,6 +11,8 @@ const (
 	DefaultRelationConfigName = "relation"
 	DefaultFavoriteConfigName = "favorite"
 	DefaultEtcdConfigName     = "etcd"
+	DefaultCommentConfigName  = "comment"
+	DefaultMessageConfigName  = "message"
 )
 
 const (
