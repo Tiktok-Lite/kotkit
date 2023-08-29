@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/video"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/video/videoservice"
+	"github.com/Tiktok-Lite/kotkit/pkg/etcd"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/cloudwego/kitex/client"
 	"github.com/spf13/viper"
@@ -15,11 +16,17 @@ var (
 )
 
 func InitVideo(config *viper.Viper) {
-	videoServiceName := config.GetString("server.name")
-	videoServiceAddr := fmt.Sprintf("%s:%d", config.GetString("server.host"), config.GetInt("server.port"))
-
-	c, err := videoservice.NewClient(videoServiceName, client.WithHostPorts(videoServiceAddr))
+	r, err := etcd.Resolver()
 	if err != nil {
+		logger.Errorf("Error occurs when creating etcd resolver: %v", err)
+		panic(err)
+	}
+
+	videoServiceName := config.GetString("server.name")
+
+	c, err := videoservice.NewClient(videoServiceName, client.WithResolver(r))
+	if err != nil {
+		logger.Errorf("Error occurs when creating video client: %v", err)
 		panic(err)
 	}
 

@@ -10,6 +10,7 @@ const (
 	DefaultMinioConfigName    = "minio"
 	DefaultRelationConfigName = "relation"
 	DefaultFavoriteConfigName = "favorite"
+	DefaultEtcdConfigName     = "etcd"
 )
 
 const (

@@ -2,9 +2,9 @@ package rpc
 
 import (
 	"context"
-	"fmt"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/user"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/user/userservice"
+	"github.com/Tiktok-Lite/kotkit/pkg/etcd"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/cloudwego/kitex/client"
 	"github.com/pkg/errors"
@@ -16,11 +16,17 @@ var (
 )
 
 func InitUser(config *viper.Viper) {
-	userServiceName := config.GetString("server.name")
-	userServiceAddr := fmt.Sprintf("%s:%d", config.GetString("server.host"), config.GetInt("server.port"))
-
-	c, err := userservice.NewClient(userServiceName, client.WithHostPorts(userServiceAddr))
+	r, err := etcd.Resolver()
 	if err != nil {
+		logger.Errorf("Error occurs when creating etcd resolver: %v", err)
+		panic(err)
+	}
+
+	userServiceName := config.GetString("server.name")
+
+	c, err := userservice.NewClient(userServiceName, client.WithResolver(r))
+	if err != nil {
+		logger.Errorf("Error occurs when creating user client: %v", err)
 		panic(err)
 	}
 

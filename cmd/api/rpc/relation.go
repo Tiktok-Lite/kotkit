@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/relation"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/relation/relationservice"
+	"github.com/Tiktok-Lite/kotkit/pkg/etcd"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/cloudwego/kitex/client"
 	"github.com/spf13/viper"
@@ -15,11 +16,17 @@ var (
 )
 
 func InitRelation(config *viper.Viper) {
-	relationServiceName := config.GetString("server.name")
-	relationServiceAddr := fmt.Sprintf("%s:%d", config.GetString("server.host"), config.GetInt("server.port"))
-
-	c, err := relationservice.NewClient(relationServiceName, client.WithHostPorts(relationServiceAddr))
+	r, err := etcd.Resolver()
 	if err != nil {
+		logger.Errorf("Error occurs when creating etcd resolver: %v", err)
+		panic(err)
+	}
+
+	relationServiceName := config.GetString("server.name")
+
+	c, err := relationservice.NewClient(relationServiceName, client.WithResolver(r))
+	if err != nil {
+		logger.Errorf("Error occurs when creating relation client: %v", err)
 		panic(err)
 	}
 
