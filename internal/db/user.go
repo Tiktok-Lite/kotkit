@@ -66,3 +66,39 @@ func QueryUserByRelation(userID, followerID int64) (bool, error) {
 	}
 	return count > 0, nil
 }
+
+func AddUserFavoriteCountVideoById(uid int64, tx *gorm.DB) error {
+	var user model.User
+	if err := tx.Model(&user).Where("id = ?", uid).UpdateColumn("favorite_count", gorm.Expr("favorite_count + ?", 1)).Error; err != nil {
+		tx.Rollback()
+		return errors.New("failed to update favorite_count")
+	}
+	return nil
+}
+
+func AddUserTotalFavoritedById(uid int64, tx *gorm.DB) error {
+	var user model.User
+	if err := tx.Model(&user).Where("id = ?", uid).UpdateColumn("total_favorited", gorm.Expr("total_favorited + ?", 1)).Error; err != nil {
+		tx.Rollback()
+		return errors.New("failed to update total_favorited")
+	}
+	return nil
+}
+
+func DeleteUserFavoriteCountVideoById(uid int64, tx *gorm.DB) error {
+	var user model.User
+	if err := tx.Model(&user).Where("id = ?", uid).UpdateColumn("favorite_count", gorm.Expr("favorite_count - ?", 1)).Error; err != nil {
+		tx.Rollback()
+		return errors.New("failed to update favorite_count")
+	}
+	return nil
+}
+
+func DeleteUserTotalFavoritedById(uid int64, tx *gorm.DB) error {
+	var user model.User
+	if err := tx.Model(&user).Where("id = ?", uid).UpdateColumn("total_favorited", gorm.Expr("total_favorited - ?", 1)).Error; err != nil {
+		tx.Rollback()
+		return errors.New("failed to update total_favorited")
+	}
+	return nil
+}

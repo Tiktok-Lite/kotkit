@@ -1,0 +1,73 @@
+syntax = "proto3";
+option go_package = "relation";
+package relation;
+
+import "idl/user.proto";
+
+//  =========================关注和取关============================
+message RelationActionRequest{
+  string token = 1; //鉴权
+//  int64 user_id = 2; //用户id
+  int64 to_user_id = 2; //对方用户id
+  int32 action_type = 3; //1代表关注 2代表取关
+}
+message RelationActionResponse{
+  int32 status_code = 1; //状态码，0代表成功，-1代表失败
+  string status_msg = 2; //返回状态信息
+}
+
+//  =========================关注列表============================
+message RelationFollowListRequest {
+  int64 user_id = 1; // 用户id
+  string token = 2; // 鉴权
+}
+message RelationFollowListResponse {
+  int32 status_code = 1; // 状态码，0代表成功，-1代表失败
+  string status_msg = 2; // 返回状态信息
+  repeated user.User user_list = 3; // 用户信息列表
+}
+
+//  =========================粉丝列表============================
+message RelationFollowerListRequest {
+  int64 user_id = 1; // 用户id
+  string token = 2; // 鉴权
+}
+message RelationFollowerListResponse {
+  int32 status_code = 1; // 状态码，0代表成功，-1代表失败
+  string status_msg = 2; // 返回状态信息
+  repeated user.User user_list = 3; // 用户列表
+}
+
+//  =========================好友列表============================
+message RelationFriendListRequest {
+  int64 user_id = 1; // 用户id
+  string token = 2; // 鉴权
+}
+message RelationFriendListResponse {
+  int32 status_code = 1; // 状态码，0代表成功，-1代表失败
+  string status_msg = 2; // 返回状态信息
+  repeated user.User user_list = 3; // 用户列表
+}
+
+message Friend{
+  string message = 1; //和好友的聊天信息
+  int64 msgType = 2; //message消息的类型，0代表当前请求用户接收的消息， 1代表当前请求用户发送的消息
+  int64 id = 3; //用户id
+  string name = 4;  // 用户名称
+  int64 follow_count = 5; // 关注数
+  int64 follower_count = 6; // 粉丝数
+  bool is_follow = 7; //是否关注，true-已关注，false-未关注
+  string avatar = 8;  // 用户头像
+  string background_image = 9;  // 用户个人页顶部大图
+  string signature = 10; // 个人简介
+  int64 total_favorited = 11;  // 获赞数量
+  int64 work_count = 12;  // 作品数量
+  int64 favorite_count = 13;  // 点赞数量
+}
+
+service RelationService {
+  rpc RelationAction(RelationActionRequest)returns(RelationActionResponse){}
+  rpc RelationFollowList(RelationFollowListRequest)returns(RelationFollowListResponse){}
+  rpc RelationFollowerList(RelationFollowerListRequest)returns(RelationFollowerListResponse){}
+  rpc RelationFriendList(RelationFriendListRequest)returns(RelationFriendListResponse){}
+}

@@ -40,7 +40,23 @@ func apiRegister(hz *server.Hertz) {
 			publish.GET("/list/", handler.PublishList)
 			publish.POST("/action/", handler.PublishAction)
 		}
+		relation := douyin.Group("/relation")
+		{
+			// 粉丝列表
+			relation.GET("/follower/list/", handler.FollowerList)
+			// 关注列表
+			relation.GET("/follow/list/", handler.FollowList)
+			// 朋友列表
+			relation.GET("/friend/list/", handler.FriendList)
+			// 关注和取关
+			relation.POST("/action/", handler.RelationAction)
+		}
 		douyin.GET("/feed/", handler.Feed)
+		favorite := douyin.Group("/favorite")
+		{
+			favorite.POST("/action/", handler.FavoriteAction)
+			favorite.GET("/list/", handler.FavoriteList)
+		}
 	}
 }
 
