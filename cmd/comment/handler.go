@@ -5,7 +5,7 @@ import (
 	"github.com/Tiktok-Lite/kotkit/cmd/comment/pack"
 	"github.com/Tiktok-Lite/kotkit/internal/db"
 	"github.com/Tiktok-Lite/kotkit/internal/model"
-	"github.com/Tiktok-Lite/kotkit/internal/repository"
+
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/comment"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/Tiktok-Lite/kotkit/pkg/log"
@@ -18,8 +18,6 @@ type CommentServiceImpl struct{}
 func (s *CommentServiceImpl) CommentAction(ctx context.Context, req *comment.DouyinCommentActionRequest) (resp *comment.DouyinCommentActionResponse, err error) {
 	logger := log.Logger()
 
-	repo := repository.NewRepository(db.DB())
-	commentRepo := repository.NewCommentRepository(repo)
 	res := &comment.DouyinCommentActionResponse{
 		StatusCode: constant.StatusOKCode,
 		StatusMsg:  "success",
@@ -42,7 +40,7 @@ func (s *CommentServiceImpl) CommentAction(ctx context.Context, req *comment.Dou
 			VideoID: uint(req.VideoId),
 			UserID:  uint(claims.Id),
 		}
-		err := commentRepo.AddComment(&c)
+		err := db.AddComment(&c)
 		if err != nil {
 			logger.Errorf("Error occurs when add comment to database. %v", err)
 			res.StatusMsg = "评论添加失败"
@@ -51,7 +49,7 @@ func (s *CommentServiceImpl) CommentAction(ctx context.Context, req *comment.Dou
 		return res, err
 	}
 	if req.ActionType == 2 {
-		err := commentRepo.DeleteCommentById(req.CommentId)
+		err := db.DeleteCommentById(req.CommentId)
 		if err != nil {
 			logger.Errorf("Error occurs when delete comment to database. %v", err)
 			res.StatusMsg = "评论删除失败"
@@ -76,9 +74,7 @@ func (s *CommentServiceImpl) CommentList(ctx context.Context, req *comment.Douyi
 		return res, err
 	}
 
-	repo := repository.NewRepository(db.DB())
-	commentRepo := repository.NewCommentRepository(repo)
-	comments, err := commentRepo.QueryCommentByVideoID(req.VideoId)
+	comments, err := db.QueryCommentByVideoID(req.VideoId)
 
 	if err != nil {
 		logger.Errorf("Error occurs when querying comment list from database. %v", err)

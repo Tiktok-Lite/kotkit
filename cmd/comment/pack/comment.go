@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/Tiktok-Lite/kotkit/internal/db"
 	"github.com/Tiktok-Lite/kotkit/internal/model"
-	"github.com/Tiktok-Lite/kotkit/internal/repository"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/comment"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/user"
 	"gorm.io/gorm"
@@ -31,9 +30,7 @@ func Comment(m *model.Comment) *comment.Comment {
 	if m == nil {
 		return nil
 	}
-	repo := repository.NewRepository(db.DB())
-	userRepo := repository.NewUserRepository(repo)
-	usr, err := userRepo.QueryUserByID(int64(m.UserID))
+	usr, err := db.QueryUserByID(int64(m.UserID))
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil
 	}

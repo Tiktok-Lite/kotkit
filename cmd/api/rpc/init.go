@@ -25,4 +25,11 @@ func InitRPC() {
 
 	relationConfig := conf.LoadConfig(constant.DefaultRelationConfigName)
 	InitRelation(relationConfig)
+
+	commentConfig := conf.LoadConfig(constant.DefaultCommentConfigName)
+	InitComment(commentConfig)
+
+	messageConfig := conf.LoadConfig(constant.DefaultMessageConfigName)
+	InitMessage(messageConfig)
+
 }

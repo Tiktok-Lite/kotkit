@@ -5,7 +5,6 @@ import (
 	"github.com/Tiktok-Lite/kotkit/cmd/message/pack"
 	"github.com/Tiktok-Lite/kotkit/internal/db"
 	"github.com/Tiktok-Lite/kotkit/internal/model"
-	"github.com/Tiktok-Lite/kotkit/internal/repository"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/message"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/Tiktok-Lite/kotkit/pkg/log"
@@ -18,8 +17,6 @@ type MessageServiceImpl struct{}
 // MessageChat implements the MessageServiceImpl interface.
 func (s *MessageServiceImpl) MessageChat(ctx context.Context, req *message.DouyinMessageChatRequest) (resp *message.DouyinMessageChatResponse, err error) {
 
-	repo := repository.NewRepository(db.DB())
-	messageRepo := repository.NewMessageRepository(repo)
 	res := &message.DouyinMessageChatResponse{
 		StatusCode: constant.StatusOKCode,
 		StatusMsg:  "success",
@@ -32,7 +29,7 @@ func (s *MessageServiceImpl) MessageChat(ctx context.Context, req *message.Douyi
 		return res, err
 	}
 	userId := parseToken.Id
-	chat, err := messageRepo.QueryMessageList(userId, req.ToUserId)
+	chat, err := db.QueryMessageList(userId, req.ToUserId)
 	if err != nil {
 		logger.Errorf("Error occurs when querying chat list from database. %v", err)
 		return nil, err
@@ -46,8 +43,6 @@ func (s *MessageServiceImpl) MessageChat(ctx context.Context, req *message.Douyi
 func (s *MessageServiceImpl) MessageAction(ctx context.Context, req *message.DouyinMessageActionRequest) (resp *message.DouyinMessageActionResponse, err error) {
 	logger := log.Logger()
 
-	repo := repository.NewRepository(db.DB())
-	messageRepo := repository.NewMessageRepository(repo)
 	res := &message.DouyinMessageActionResponse{
 		StatusCode: constant.StatusOKCode,
 		StatusMsg:  "success",
@@ -66,7 +61,7 @@ func (s *MessageServiceImpl) MessageAction(ctx context.Context, req *message.Dou
 			FromUserID: uint(claims.Id),
 			CreateTime: new(time.Time).Format("01-02"),
 		}
-		err := messageRepo.SendMessage(&c)
+		err := db.SendMessage(&c)
 		if err != nil {
 			logger.Errorf("Error occurs when add message to database. %v", err)
 			res.StatusMsg = "发送消息失败"
