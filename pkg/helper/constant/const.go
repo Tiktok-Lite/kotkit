@@ -1,14 +1,16 @@
 package constant
 
 const (
-	DefaultDBConfigName    = "db"
-	DefaultLogConfigName   = "log"
-	DefaultAPIConfigName   = "api"
-	DefaultUserConfigName  = "user"
-	DefaultVideoConfigName = "video"
-	DefaultLoginConfigName = "login"
-	DefaultMinioConfigName = "minio"
-	DefaultEtcdConfigName  = "etcd"
+	DefaultDBConfigName       = "db"
+	DefaultLogConfigName      = "log"
+	DefaultAPIConfigName      = "api"
+	DefaultUserConfigName     = "user"
+	DefaultVideoConfigName    = "video"
+	DefaultLoginConfigName    = "login"
+	DefaultMinioConfigName    = "minio"
+	DefaultRelationConfigName = "relation"
+	DefaultFavoriteConfigName = "favorite"
+	DefaultEtcdConfigName     = "etcd"
 )
 
 const (
