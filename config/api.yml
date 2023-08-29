@@ -1,4 +1,5 @@
 server:
   name: "test server"
-  host: 127.0.0.1
+#  这里使用app测试时候使用0.0.0.0
+  host: 0.0.0.0
   port: 8080
