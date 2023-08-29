@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/comment"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/comment/commentservice"
+	"github.com/Tiktok-Lite/kotkit/pkg/etcd"
+	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/cloudwego/kitex/client"
 	"github.com/spf13/viper"
 )
@@ -14,20 +16,41 @@ var (
 )
 
 func InitComment(config *viper.Viper) {
-	commentServiceName := config.GetString("server.name")
-	commentServiceAddr := fmt.Sprintf("%s:%d", config.GetString("server.host"), config.GetInt("server.port"))
-
-	c, err := commentservice.NewClient(commentServiceName, client.WithHostPorts(commentServiceAddr))
+	r, err := etcd.Resolver()
 	if err != nil {
+		logger.Errorf("Error occurs when creating etcd resolver: %v", err)
 		panic(err)
 	}
 
+	commentServiceName := config.GetString("server.name")
+
+	c, err := commentservice.NewClient(commentServiceName, client.WithResolver(r))
+
+	if err != nil {
+		logger.Errorf("Error occurs when creating login client: %v", err)
+		panic(err)
+	}
 	commentClient = c
 }
 
 func CommentList(ctx context.Context, req *comment.DouyinCommentListRequest) (*comment.DouyinCommentListResponse, error) {
-	return commentClient.CommentList(ctx, req)
+	resp, err := commentClient.CommentList(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode == constant.StatusErrorCode {
+		return resp, fmt.Errorf(resp.StatusMsg)
+	}
+	return resp, nil
 }
 func CommentAction(ctx context.Context, req *comment.DouyinCommentActionRequest) (*comment.DouyinCommentActionResponse, error) {
-	return commentClient.CommentAction(ctx, req)
+	resp, err := commentClient.CommentAction(ctx, req)
+	if err != nil {
+		return resp, err
+	}
+	if resp.StatusCode == constant.StatusErrorCode {
+		return resp, fmt.Errorf(resp.StatusMsg)
+	}
+
+	return resp, nil
 }

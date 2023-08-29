@@ -7,14 +7,14 @@ import (
 )
 
 func SendMessage(message *model.Message) error {
-	if err := db.Save(message).Error; err != nil {
+	if err := DB().Save(message).Error; err != nil {
 		return errors.New("failed to send message")
 	}
 	return nil
 }
 func QueryMessageList(userId int64, toUserId int64) ([]*model.Message, error) {
 	var messages []*model.Message
-	if err := db.Debug().Where("from_user_id", userId).Where("to_user_id", toUserId).
+	if err := DB().Debug().Where("from_user_id", userId).Where("to_user_id", toUserId).
 		Order("created_at desc").Find(&messages).Error; err != nil {
 		logger.Errorf("failed to query messages from databse: %v", err)
 		return nil, err
