@@ -17,4 +17,7 @@ func InitRPC() {
 
 	favoriteConfig := conf.LoadConfig(constant.DefaultFavoriteConfigName)
 	InitFavorite(favoriteConfig)
+
+	relationConfig := conf.LoadConfig(constant.DefaultRelationConfigName)
+	InitRelation(relationConfig)
 }
