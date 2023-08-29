@@ -1,7 +1,6 @@
 package db
 
 import (
-	"fmt"
 	"github.com/Tiktok-Lite/kotkit/internal/model"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/relation"
 	"github.com/pkg/errors"
@@ -71,7 +70,6 @@ func DelRelation(userID uint, toUserID uint) error {
 
 func GetFollowerListByUserID(UserID uint) ([]*FollowRelation, error) {
 	var RelationList []*FollowRelation
-	fmt.Println(UserID)
 	if err := DB().Where("user_id = ?", UserID).Find(&RelationList).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil

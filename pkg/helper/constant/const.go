@@ -22,3 +22,8 @@ const (
 	FavoriteCode   = 1
 	UnFavoriteCode = 2
 )
+
+const (
+	FollowUserCode   = 1
+	UnFollowUserCode = 2
+)
