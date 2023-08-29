@@ -232,6 +232,16 @@ func (s *VideoServiceImpl) PublishAction(ctx context.Context, req *video.Publish
 		return res, nil
 	}
 
+	// 默认文件不得大于50MB
+	if len(req.Data) > 50*1024*1024 {
+		logger.Errorf("Video file is too large %v.", len(req.Data))
+		res := &video.PublicActionResponse{
+			StatusCode: constant.StatusErrorCode,
+			StatusMsg:  "视频文件太大",
+		}
+		return res, nil
+	}
+
 	userID := claims.Id
 	videoTitle, coverTitle := fmt.Sprintf("%d_%s_%d.mp4", userID, req.Title, time.Now().Unix()), fmt.Sprintf("%d_%s_%d.jpg", userID, req.Title, time.Now().Unix())
 
@@ -242,19 +252,7 @@ func (s *VideoServiceImpl) PublishAction(ctx context.Context, req *video.Publish
 		Title:    req.Title,
 	}
 
-	err = oss.PublishVideo(req.Data, videoTitle, coverTitle)
-	if err != nil {
-		logger.Errorf("Error occurs when publishing video. %v", err)
-		res := &video.PublicActionResponse{
-			StatusCode: constant.StatusErrorCode,
-			StatusMsg:  "上传视频到minio失败",
-		}
-		return res, nil
-	}
-
-	// TODO: 在上传数据库和OSS中间加入事务
-	// 注意：先把东西上传到oss后写入数据库，目的是防止上传失败后数据库中有记录但是oss中没有
-	// 保证数据的原子性
+	// 注意保证数据的原子性
 	err = db.CreateVideo(video_)
 	if err != nil {
 		logger.Errorf("Error occurs when creating video to database. %v", err)
@@ -264,6 +262,18 @@ func (s *VideoServiceImpl) PublishAction(ctx context.Context, req *video.Publish
 		}
 		return res, nil
 	}
+
+	go func() {
+		err = oss.PublishVideo(req.Data, videoTitle, coverTitle)
+		if err != nil {
+			logger.Errorf("Error occurs when publishing video to minio. %v", err)
+			// minio发布失败则删除数据库中的记录
+			e := db.DeleteVideoById(video_.ID, uint(userID))
+			if e != nil {
+				logger.Errorf("Error occurs when deleting video and records. %v", e)
+			}
+		}
+	}()
 
 	res := &video.PublicActionResponse{
 		StatusCode: constant.StatusOKCode,

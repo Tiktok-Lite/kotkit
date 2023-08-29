@@ -44,11 +44,28 @@ func QueryVideoListByUserID(userID int64) ([]*model.Video, error) {
 }
 
 func CreateVideo(video *model.Video) error {
-	if err := DB().Debug().Create(video).Error; err != nil {
+	tx := DB().Begin()
+
+	if err := tx.Debug().Create(video).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	if err := AddWorkCountById(video.UserID, tx); err != nil {
+		return err
+	}
+
+	tx.Commit()
+	return nil
+}
+
+func AddWorkCountById(uid uint, tx *gorm.DB) error {
+	var user model.User
+	if err := tx.Debug().Model(&user).Where("id = ?", uid).UpdateColumn("work_count", gorm.Expr("work_count + ?", 1)).Error; err != nil {
+		tx.Rollback()
 		return err
 	}
 	return nil
-
 }
 
 func QueryVideoLikeRelation(vid, uid int64) (bool, error) {
@@ -104,4 +121,29 @@ func QueryVideosByVideoIds(videoIds []int64) ([]*model.Video, error) {
 		return nil, err
 	}
 	return videos, nil
+}
+
+func DeleteVideoById(vid, uid uint) error {
+	tx := DB().Begin()
+
+	if err := tx.Debug().Where("id = ?", vid).Delete(&model.Video{}).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	if err := DeleteWorkCountById(uid, tx); err != nil {
+		return err
+	}
+
+	tx.Commit()
+	return nil
+}
+
+func DeleteWorkCountById(uid uint, tx *gorm.DB) error {
+	var user model.User
+	if err := tx.Debug().Model(&user).Where("id = ?", uid).UpdateColumn("work_count", gorm.Expr("work_count - ?", 1)).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return nil
 }
