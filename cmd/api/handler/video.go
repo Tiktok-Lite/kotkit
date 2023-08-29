@@ -95,7 +95,7 @@ func PublishAction(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	videoFile, err := c.FormFile("data")
+	videoFile, err := c.Request.FormFile("data")
 	if err != nil {
 		logger.Errorf("Failed to get video file from request. %v", err)
 		ResponseError(c, http.StatusInternalServerError, response.PackPublishActionError("获取视频文件失败"))
