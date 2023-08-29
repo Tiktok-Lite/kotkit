@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/favorite/favoriteservice"
 	"github.com/Tiktok-Lite/kotkit/pkg/conf"
+	"github.com/Tiktok-Lite/kotkit/pkg/etcd"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/jwt"
 	"github.com/Tiktok-Lite/kotkit/pkg/log"
+	"github.com/cloudwego/kitex/pkg/rpcinfo"
 	"github.com/cloudwego/kitex/server"
 	"net"
 )
@@ -26,6 +28,12 @@ func init() {
 }
 
 func main() {
+	r, err := etcd.Registry()
+	if err != nil {
+		logger.Errorf("Error occurs when creating etcd registry: %v", err)
+		panic(err)
+	}
+
 	addr, err := net.ResolveTCPAddr("tcp", serviceAddr)
 	if err != nil {
 		logger.Errorf("Error occurs when resolving favorite service address: %v", err)
@@ -33,7 +41,9 @@ func main() {
 	}
 
 	svr := favoriteservice.NewServer(new(FavoriteServiceImpl),
+		server.WithServerBasicInfo(&rpcinfo.EndpointBasicInfo{ServiceName: serviceName}),
 		server.WithServiceAddr(addr),
+		server.WithRegistry(r),
 	)
 
 	err = svr.Run()
