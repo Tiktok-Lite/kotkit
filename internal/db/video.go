@@ -58,3 +58,50 @@ func QueryVideoLikeRelation(vid, uid int64) (bool, error) {
 	}
 	return count > 0, nil
 }
+
+func AddVideoFavoriteCountById(vid int64, tx *gorm.DB) error {
+	var video model.Video
+	if err := tx.Debug().Model(&video).Where("id = ?", vid).UpdateColumn("favorite_count", gorm.Expr("favorite_count + ?", 1)).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	return nil
+}
+
+func DeleteVideoFavoriteCountById(vid int64, tx *gorm.DB) error {
+	var video model.Video
+	if err := tx.Debug().Model(&video).Where("id = ?", vid).UpdateColumn("favorite_count", gorm.Expr("favorite_count - ?", 1)).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	return nil
+}
+
+func QueryUserIdByVideoId(vid int64) (uint, error) {
+	var video model.Video
+	if err := DB().Debug().Where("id = ?", vid).First(&video).Error; err != nil {
+		return 0, err
+	}
+	return video.UserID, nil
+}
+
+func QueryFavoriteVideoIdsByUserId(uid int64) ([]int64, error) {
+	var videoIds []int64
+	err := DB().Debug().Raw("SELECT video_id FROM user_like_videos WHERE user_id = ?", uid).Scan(&videoIds).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	} else if err != nil {
+		return nil, err
+	}
+
+	return videoIds, nil
+}
+
+func QueryVideosByVideoIds(videoIds []int64) ([]*model.Video, error) {
+	var videos []*model.Video
+	err := DB().Debug().Preload("Author").Where("id IN ?", videoIds).Find(&videos).Error
+	if err != nil {
+		return nil, err
+	}
+	return videos, nil
+}
