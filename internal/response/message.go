@@ -6,12 +6,11 @@ import (
 
 type MessageList struct {
 	Base
-	MessageList []*message.Message `json:"message"`
+	MessageList []*message.Message `json:"message_list"`
 }
 
 type Message struct {
 	Base
-	Message *message.Message `json:"message"`
 }
 
 func PackMessageListSuccess(messageList []*message.Message, msg string) MessageList {

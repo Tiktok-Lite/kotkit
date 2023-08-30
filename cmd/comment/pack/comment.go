@@ -6,6 +6,7 @@ import (
 	"github.com/Tiktok-Lite/kotkit/internal/model"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/comment"
 	"github.com/Tiktok-Lite/kotkit/kitex_gen/user"
+	"github.com/Tiktok-Lite/kotkit/pkg/oss"
 	"gorm.io/gorm"
 )
 
@@ -34,12 +35,25 @@ func Comment(m *model.Comment) *comment.Comment {
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil
 	}
+
+	avatarUrl, err := oss.GetObjectURL(oss.AvatarBucketName, usr.Avatar)
+	if err != nil {
+		return nil
+	}
+	usr.Avatar = avatarUrl
+
+	bgImgUrl, err := oss.GetObjectURL(oss.BackgroundImageBucketName, usr.BackgroundImage)
+	if err != nil {
+		return nil
+	}
+	usr.BackgroundImage = bgImgUrl
+
 	u := User(usr)
 	return &comment.Comment{
 		Id:         int64(m.ID),
 		User:       u,
 		Content:    m.Content,
-		CreateDate: m.CreatedAt.Format("01-02"),
+		CreateDate: m.CreateDate,
 	}
 }
 func CommentList(cs []*model.Comment) []*comment.Comment {
