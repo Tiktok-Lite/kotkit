@@ -17,22 +17,27 @@ type MessageServiceImpl struct{}
 // MessageChat implements the MessageServiceImpl interface.
 func (s *MessageServiceImpl) MessageChat(ctx context.Context, req *message.DouyinMessageChatRequest) (resp *message.DouyinMessageChatResponse, err error) {
 
+	parseToken, err := Jwt.ParseToken(req.Token)
+	if err != nil {
+		logger.Errorf("Error occurs when parsing token. %v", err)
+		res := &message.DouyinMessageChatResponse{
+			StatusCode: constant.StatusErrorCode,
+			StatusMsg:  "token 解析错误",
+		}
+		return res, nil
+	}
+
 	res := &message.DouyinMessageChatResponse{
 		StatusCode: constant.StatusOKCode,
 		StatusMsg:  "success",
-	}
-	token := req.Token
-	parseToken, err := Jwt.ParseToken(token)
-	if err != nil {
-		logger.Errorf("Error occurs when parsing token. %v", err)
-		res.StatusMsg = "token错误"
-		return res, err
 	}
 	userId := parseToken.Id
 	chat, err := db.QueryMessageList(userId, req.ToUserId)
 	if err != nil {
 		logger.Errorf("Error occurs when querying chat list from database. %v", err)
-		return nil, err
+		res.StatusCode = constant.StatusErrorCode
+		res.StatusMsg = "查询消息列表失败"
+		return res, nil
 	}
 	chatList := pack.ChatList(chat)
 	res.MessageList = chatList
@@ -43,33 +48,37 @@ func (s *MessageServiceImpl) MessageChat(ctx context.Context, req *message.Douyi
 func (s *MessageServiceImpl) MessageAction(ctx context.Context, req *message.DouyinMessageActionRequest) (resp *message.DouyinMessageActionResponse, err error) {
 	logger := log.Logger()
 
+	parseToken, err := Jwt.ParseToken(req.Token)
+	if err != nil {
+		logger.Errorf("Error occurs when parsing token. %v", err)
+		res := &message.DouyinMessageActionResponse{
+			StatusCode: constant.StatusErrorCode,
+			StatusMsg:  "token 解析错误",
+		}
+		return res, nil
+	}
 	res := &message.DouyinMessageActionResponse{
 		StatusCode: constant.StatusOKCode,
 		StatusMsg:  "success",
 	}
-	claims, err := Jwt.ParseToken(req.Token)
-	if err != nil {
-		logger.Errorf("Error occurs when parsing token. %v", err)
-		res.StatusMsg = "token错误"
-		return res, err
-	}
 
-	if req.ActionType == 1 {
+	if req.ActionType == constant.PostMessageCode {
 		c := model.Message{
 			Content:    req.Content,
 			ToUserID:   uint(req.ToUserId),
-			FromUserID: uint(claims.Id),
+			FromUserID: uint(parseToken.Id),
 			CreateTime: new(time.Time).Format("01-02"),
 		}
 		err := db.SendMessage(&c)
 		if err != nil {
 			logger.Errorf("Error occurs when add message to database. %v", err)
+			res.StatusCode = constant.StatusErrorCode
 			res.StatusMsg = "发送消息失败"
+			return res, nil
 		}
-		return res, err
-	} else {
-		res.StatusCode = constant.StatusErrorCode
-		res.StatusMsg = "ActionType错误"
-		return res, err
+		return res, nil
 	}
+	res.StatusCode = constant.StatusErrorCode
+	res.StatusMsg = "ActionType错误"
+	return res, nil
 }

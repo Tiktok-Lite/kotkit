@@ -27,3 +27,18 @@ func PackCommentActionSuccess(comment *comment.Comment, msg string) Comment {
 		Comment: comment,
 	}
 }
+func PackCommentListError(errorMsg string) CommentList {
+	base := PackBaseError(errorMsg)
+	return CommentList{
+		Base:        base,
+		CommentList: nil,
+	}
+}
+
+func PackCommentActionError(errorMsg string) Comment {
+	base := PackBaseError(errorMsg)
+	return Comment{
+		Base:    base,
+		Comment: nil,
+	}
+}

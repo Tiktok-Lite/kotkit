@@ -36,7 +36,7 @@ func InitComment(config *viper.Viper) {
 func CommentList(ctx context.Context, req *comment.DouyinCommentListRequest) (*comment.DouyinCommentListResponse, error) {
 	resp, err := commentClient.CommentList(ctx, req)
 	if err != nil {
-		return nil, err
+		return resp, err
 	}
 	if resp.StatusCode == constant.StatusErrorCode {
 		return resp, fmt.Errorf(resp.StatusMsg)

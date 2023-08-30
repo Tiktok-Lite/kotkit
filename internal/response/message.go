@@ -28,3 +28,18 @@ func PackMessageActionSuccess(msg string) Message {
 		Base: base,
 	}
 }
+
+func PackMessageListError(msg string) MessageList {
+	base := PackBaseSuccess(msg)
+	return MessageList{
+		Base:        base,
+		MessageList: nil,
+	}
+}
+
+func PackMessageActionError(msg string) Message {
+	base := PackBaseSuccess(msg)
+	return Message{
+		Base: base,
+	}
+}
