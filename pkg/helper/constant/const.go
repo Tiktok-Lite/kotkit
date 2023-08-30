@@ -11,6 +11,8 @@ const (
 	DefaultRelationConfigName = "relation"
 	DefaultFavoriteConfigName = "favorite"
 	DefaultEtcdConfigName     = "etcd"
+	DefaultCommentConfigName  = "comment"
+	DefaultMessageConfigName  = "message"
 )
 
 const (
@@ -22,6 +24,14 @@ const (
 	FavoriteCode   = 1
 	UnFavoriteCode = 2
 )
+
+const (
+	PostCommentCode   = 1
+	DeleteCommentCode = 2
+)
+
+const (
+	PostMessageCode = 1
 
 const (
 	FollowUserCode   = 1
