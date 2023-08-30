@@ -24,6 +24,7 @@ const (
 	FavoriteCode   = 1
 	UnFavoriteCode = 2
 )
+
 const (
 	PostCommentCode   = 1
 	DeleteCommentCode = 2
@@ -31,4 +32,8 @@ const (
 
 const (
 	PostMessageCode = 1
+
+const (
+	FollowUserCode   = 1
+	UnFollowUserCode = 2
 )
