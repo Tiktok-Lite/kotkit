@@ -32,6 +32,7 @@ const (
 
 const (
 	PostMessageCode = 1
+)
 
 const (
 	FollowUserCode   = 1
