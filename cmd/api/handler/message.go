@@ -58,34 +58,34 @@ func MessageAction(ctx context.Context, c *app.RequestContext) {
 	token := c.Query("token")
 	if token == "" {
 		logger.Errorf("Illegal input: empty token.")
-		ResponseError(c, http.StatusBadRequest, response.PackMessageListError("token不能为空"))
+		ResponseError(c, http.StatusBadRequest, response.PackMessageActionError("token不能为空"))
 		return
 	}
 
 	toUserId := c.Query("to_user_id")
 	if toUserId == "" {
 		logger.Errorf("Illegal input: empty to_user_id.")
-		ResponseError(c, http.StatusBadRequest, response.PackMessageListError("to_user_id不能为空"))
+		ResponseError(c, http.StatusBadRequest, response.PackMessageActionError("to_user_id不能为空"))
 		return
 	}
 	id, err := strconv.ParseInt(toUserId, 10, 64)
 	if err != nil {
 		logger.Errorf("failed to parse to_user_id: %v", err)
 		ResponseError(c, http.StatusBadRequest,
-			response.PackMessageListError("请检查您的输入是否合法"))
+			response.PackMessageActionError("请检查您的输入是否合法"))
 		return
 	}
 
 	actionType := c.Query("action_type")
 	if actionType == "" {
 		logger.Errorf("Illegal input: empty action_type.")
-		ResponseError(c, http.StatusBadRequest, response.PackMessageListError("action_type不能为空"))
+		ResponseError(c, http.StatusBadRequest, response.PackMessageActionError("action_type不能为空"))
 		return
 	}
 	act, err := strconv.Atoi(actionType)
 	if err != nil {
 		logger.Errorf("failed to parse action_type: %v", err)
-		ResponseError(c, http.StatusBadRequest, response.PackMessageListError("请检查您的输入是否合法"))
+		ResponseError(c, http.StatusBadRequest, response.PackMessageActionError("请检查您的输入是否合法"))
 		return
 	}
 
@@ -98,8 +98,8 @@ func MessageAction(ctx context.Context, c *app.RequestContext) {
 		content := c.Query("content")
 		s := strings.TrimSpace(content)
 		if len(s) == 0 {
-			ResponseError(c, http.StatusInternalServerError,
-				response.PackMessageListError("消息不能为空"))
+			ResponseError(c, http.StatusBadRequest,
+				response.PackMessageActionError("消息不能为空"))
 			return
 		}
 		req.Content = s
@@ -108,7 +108,7 @@ func MessageAction(ctx context.Context, c *app.RequestContext) {
 	if err != nil {
 		logger.Errorf("failed to call rpc: %v", err)
 		ResponseError(c, http.StatusInternalServerError,
-			response.PackMessageListError(resp.StatusMsg))
+			response.PackMessageActionError(resp.StatusMsg))
 		return
 	}
 

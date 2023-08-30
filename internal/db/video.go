@@ -147,3 +147,21 @@ func DeleteWorkCountById(uid uint, tx *gorm.DB) error {
 
 	return nil
 }
+
+func AddVideoCommentCountById(vid uint, tx *gorm.DB) error {
+	var video model.Video
+	if err := tx.Debug().Model(&video).Where("id = ?", vid).UpdateColumn("comment_count", gorm.Expr("comment_count + ?", 1)).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	return nil
+}
+
+func DeleteVideoCommentCountById(vid uint, tx *gorm.DB) error {
+	var video model.Video
+	if err := tx.Debug().Model(&video).Where("id = ?", vid).UpdateColumn("comment_count", gorm.Expr("comment_count - ?", 1)).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	return nil
+}

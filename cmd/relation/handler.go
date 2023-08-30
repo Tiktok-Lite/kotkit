@@ -8,6 +8,7 @@ import (
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/constant"
 	"github.com/Tiktok-Lite/kotkit/pkg/helper/converter"
 	"github.com/Tiktok-Lite/kotkit/pkg/log"
+	"github.com/Tiktok-Lite/kotkit/pkg/oss"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -64,7 +65,6 @@ func (s *RelationServiceImpl) RelationAction(ctx context.Context, req *relation.
 
 // RelationFollowList implements the RelationServiceImpl interface.
 func (s *RelationServiceImpl) RelationFollowList(ctx context.Context, req *relation.RelationFollowListRequest) (resp *relation.RelationFollowListResponse, err error) {
-	// TODO: Your code here...
 	logger := log.Logger()
 	userID := req.UserId
 
@@ -128,6 +128,33 @@ func (s *RelationServiceImpl) RelationFollowList(ctx context.Context, req *relat
 			}
 			return res, nil
 		}
+
+		avatarUrl, err := oss.GetObjectURL(oss.AvatarBucketName, user.Avatar)
+		if err != nil {
+			logger.Errorf("Failed to get object url due to %v", err)
+			res := &relation.RelationFollowListResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "minio数据库查询错误",
+				UserList:   nil,
+			}
+			return res, nil
+		}
+		userProto.Avatar = &avatarUrl
+
+		bgImgUrl, err := oss.GetObjectURL(oss.BackgroundImageBucketName, user.BackgroundImage)
+		if err != nil {
+			logger.Errorf("Failed to get object url due to %v", err)
+			res := &relation.RelationFollowListResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "minio数据库查询错误",
+				UserList:   nil,
+			}
+			return res, nil
+		}
+		userProto.BackgroundImage = &bgImgUrl
+
+		// 都是关注者列表，所以关注了
+		userProto.IsFollow = true
 		userProtoList = append(userProtoList, userProto)
 	}
 
@@ -204,6 +231,44 @@ func (s *RelationServiceImpl) RelationFollowerList(ctx context.Context, req *rel
 			}
 			return res, nil
 		}
+
+		avatarUrl, err := oss.GetObjectURL(oss.AvatarBucketName, user.Avatar)
+		if err != nil {
+			logger.Errorf("Failed to get object url due to %v", err)
+			res := &relation.RelationFollowerListResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "minio数据库查询错误",
+				UserList:   nil,
+			}
+			return res, nil
+		}
+		userProto.Avatar = &avatarUrl
+
+		bgImgUrl, err := oss.GetObjectURL(oss.BackgroundImageBucketName, user.BackgroundImage)
+		if err != nil {
+			logger.Errorf("Failed to get object url due to %v", err)
+			res := &relation.RelationFollowerListResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "minio数据库查询错误",
+				UserList:   nil,
+			}
+			return res, nil
+		}
+		userProto.BackgroundImage = &bgImgUrl
+
+		// 粉丝列表计算是否自己关注过
+		isFollow, err := db.QueryUserByRelation(userProto.Id, claims.Id)
+		if err != nil {
+			logger.Errorf("Failed to query from database due to %v", err)
+			res := &relation.RelationFollowerListResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "内部数据库查询错误",
+				UserList:   nil,
+			}
+			return res, nil
+		}
+		userProto.IsFollow = isFollow
+
 		userProtoList = append(userProtoList, userProto)
 	}
 
@@ -283,11 +348,33 @@ func (s *RelationServiceImpl) RelationFriendList(ctx context.Context, req *relat
 			}
 			return res, nil
 		}
-		userProtoList = append(userProtoList, userProto)
-	}
 
-	for _, friend := range userProtoList {
-		friend.IsFollow = true
+		avatarUrl, err := oss.GetObjectURL(oss.AvatarBucketName, user.Avatar)
+		if err != nil {
+			logger.Errorf("Failed to get object url due to %v", err)
+			res := &relation.RelationFriendListResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "minio数据库查询错误",
+				UserList:   nil,
+			}
+			return res, nil
+		}
+		userProto.Avatar = &avatarUrl
+
+		bgImgUrl, err := oss.GetObjectURL(oss.BackgroundImageBucketName, user.BackgroundImage)
+		if err != nil {
+			logger.Errorf("Failed to get object url due to %v", err)
+			res := &relation.RelationFriendListResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "minio数据库查询错误",
+				UserList:   nil,
+			}
+			return res, nil
+		}
+		userProto.BackgroundImage = &bgImgUrl
+
+		userProto.IsFollow = true
+		userProtoList = append(userProtoList, userProto)
 	}
 
 	// 返回结果

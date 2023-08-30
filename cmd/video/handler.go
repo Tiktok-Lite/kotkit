@@ -94,6 +94,37 @@ func (s *VideoServiceImpl) Feed(ctx context.Context, req *video.FeedRequest) (*v
 			return res, nil
 		}
 		v.CoverURL = coverUrl
+
+		// 处理视频的用户是否被关注
+		followed, err := db.QueryUserByRelation(int64(v.Author.ID), uid)
+		v.Author.IsFollow = followed
+
+		// 处理发布视频的用户的头像和背景图
+		avatarUrl, err := oss.GetObjectURL(oss.AvatarBucketName, v.Author.Avatar)
+		if err != nil {
+			logger.Errorf("Error occurs when getting avatar url from minio. %v", err)
+			res := &video.FeedResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "内部minio数据库错误，获取视频失败",
+				VideoList:  nil,
+				NextTime:   nil,
+			}
+			return res, nil
+		}
+		v.Author.Avatar = avatarUrl
+
+		bgUrl, err := oss.GetObjectURL(oss.BackgroundImageBucketName, v.Author.BackgroundImage)
+		if err != nil {
+			logger.Errorf("Error occurs when getting background image url from minio. %v", err)
+			res := &video.FeedResponse{
+				StatusCode: constant.StatusErrorCode,
+				StatusMsg:  "内部minio数据库错误，获取视频失败",
+				VideoList:  nil,
+				NextTime:   nil,
+			}
+			return res, nil
+		}
+		v.Author.BackgroundImage = bgUrl
 	}
 
 	videoListProto, err := converter.ConvertVideoModelListToProto(videos)

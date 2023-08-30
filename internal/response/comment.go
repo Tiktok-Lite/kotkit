@@ -4,7 +4,7 @@ import "github.com/Tiktok-Lite/kotkit/kitex_gen/comment"
 
 type CommentList struct {
 	Base
-	CommentList []*comment.Comment `json:"comment"`
+	CommentList []*comment.Comment `json:"comment_list"`
 }
 
 type Comment struct {

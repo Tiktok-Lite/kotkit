@@ -2,6 +2,7 @@ package converter
 
 import (
 	"github.com/Tiktok-Lite/kotkit/internal/model"
+	"github.com/Tiktok-Lite/kotkit/kitex_gen/comment"
 	genUser "github.com/Tiktok-Lite/kotkit/kitex_gen/user"
 	genVideo "github.com/Tiktok-Lite/kotkit/kitex_gen/video"
 	"github.com/pkg/errors"
@@ -45,5 +46,24 @@ func ConvertUserModelToProto(user *model.User) (*genUser.User, error) {
 		TotalFavorited:  &user.TotalFavorited,
 		WorkCount:       &user.WorkCount,
 		FavoriteCount:   &user.FavoriteCount,
+	}, nil
+}
+
+func ConvertCommentModelToProto(cmt *model.Comment, usr *model.User) (*comment.Comment, error) {
+	if cmt == nil {
+		return nil, errors.New("comment is nil")
+	}
+	if usr == nil {
+		return nil, errors.New("user is nil")
+	}
+	userProto, err := ConvertUserModelToProto(usr)
+	if err != nil {
+		return nil, err
+	}
+	return &comment.Comment{
+		Id:         int64(cmt.ID),
+		Content:    cmt.Content,
+		User:       userProto,
+		CreateDate: cmt.CreateDate,
 	}, nil
 }

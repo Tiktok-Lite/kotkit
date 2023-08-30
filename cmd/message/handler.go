@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/Tiktok-Lite/kotkit/cmd/message/pack"
 	"github.com/Tiktok-Lite/kotkit/internal/db"
 	"github.com/Tiktok-Lite/kotkit/internal/model"
@@ -16,7 +17,6 @@ type MessageServiceImpl struct{}
 
 // MessageChat implements the MessageServiceImpl interface.
 func (s *MessageServiceImpl) MessageChat(ctx context.Context, req *message.DouyinMessageChatRequest) (resp *message.DouyinMessageChatResponse, err error) {
-
 	parseToken, err := Jwt.ParseToken(req.Token)
 	if err != nil {
 		logger.Errorf("Error occurs when parsing token. %v", err)
@@ -32,14 +32,19 @@ func (s *MessageServiceImpl) MessageChat(ctx context.Context, req *message.Douyi
 		StatusMsg:  "success",
 	}
 	userId := parseToken.Id
-	chat, err := db.QueryMessageList(userId, req.ToUserId)
+	// 自己的聊天列表
+	userChat, err := db.QueryMessageList(userId, req.ToUserId)
+	// 对方的聊天列表
+	toUserChat, err := db.QueryMessageList(req.ToUserId, userId)
 	if err != nil {
 		logger.Errorf("Error occurs when querying chat list from database. %v", err)
 		res.StatusCode = constant.StatusErrorCode
 		res.StatusMsg = "查询消息列表失败"
 		return res, nil
 	}
-	chatList := pack.ChatList(chat)
+	// 合并聊天列表
+	chatList := pack.ChatList(userChat)
+	chatList = append(chatList, pack.ChatList(toUserChat)...)
 	res.MessageList = chatList
 	return res, nil
 }
@@ -63,11 +68,12 @@ func (s *MessageServiceImpl) MessageAction(ctx context.Context, req *message.Dou
 	}
 
 	if req.ActionType == constant.PostMessageCode {
+		t := time.Now()
 		c := model.Message{
 			Content:    req.Content,
 			ToUserID:   uint(req.ToUserId),
 			FromUserID: uint(parseToken.Id),
-			CreateTime: new(time.Time).Format("01-02"),
+			CreateTime: fmt.Sprintf("%02d-%02d", t.Month(), t.Day()),
 		}
 		err := db.SendMessage(&c)
 		if err != nil {
@@ -78,6 +84,7 @@ func (s *MessageServiceImpl) MessageAction(ctx context.Context, req *message.Dou
 		}
 		return res, nil
 	}
+
 	res.StatusCode = constant.StatusErrorCode
 	res.StatusMsg = "ActionType错误"
 	return res, nil
